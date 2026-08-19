@@ -1,741 +1,695 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Gamepay Hub · Soft Liquid Glassmorphism</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800;900&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#070d1e;
+    --bg-grad:
+      radial-gradient(900px 600px at 8% -6%, rgba(91,112,255,.28), transparent 60%),
+      radial-gradient(700px 520px at 96% 8%, rgba(255,92,138,.22), transparent 60%),
+      radial-gradient(900px 700px at 50% 102%, rgba(32,197,168,.18), transparent 60%),
+      linear-gradient(180deg,#0a1430 0%, #070d1e 55%, #060c1c 100%);
+    --card:rgba(255,255,255,.07);
+    --card-solid:rgba(18,32,62,.82);
+    --card-border:rgba(255,255,255,.11);
+    --text:#eef3ff;
+    --muted:#8ea0c2;
+    --muted-2:#6d7ea3;
+    --accent:#6a75ff;
+    --accent-2:#2ec4dc;
+    --accent-grad:linear-gradient(135deg,#6a75ff 0%, #2bb8e6 52%, #34e0c0 100%);
+    --pill:rgba(255,255,255,.07);
+    --pill-border:rgba(255,255,255,.10);
+    --input-bg:rgba(255,255,255,.06);
+    --modal:rgba(16,30,58,.92);
+    --shadow:0 18px 42px rgba(0,0,0,.42), 0 2px 10px rgba(0,0,0,.25);
+    --radius-xl:22px;
+    --radius-lg:16px;
+  }
+  body.light{
+    --bg:#f6f7ff;
+    --bg-grad:
+      radial-gradient(900px 600px at 6% -4%, rgba(106,117,255,.18), transparent 60%),
+      radial-gradient(700px 520px at 96% 6%, rgba(255,122,162,.16), transparent 60%),
+      radial-gradient(900px 700px at 50% 102%, rgba(52,224,192,.14), transparent 60%),
+      linear-gradient(180deg,#f7f8ff 0%, #eef1ff 55%, #f6f7ff 100%);
+    --card:rgba(255,255,255,.86);
+    --card-solid:#ffffff;
+    --card-border:rgba(37,47,86,.08);
+    --text:#1f2740;
+    --muted:#6b7696;
+    --muted-2:#8a94b8;
+    --pill:rgba(255,255,255,.9);
+    --pill-border:rgba(37,47,86,.08);
+    --input-bg:#f1f3ff;
+    --modal:rgba(255,255,255,.96);
+    --shadow:0 18px 40px rgba(60,72,130,.12), 0 2px 10px rgba(60,72,130,.08);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scrollbar-gutter:stable}
+  body{
+    font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    background:var(--bg-grad), var(--bg);
+    background-attachment:fixed;
+    color:var(--text);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+    transition: background .35s, color .3s;
+  }
+  a{color:inherit}
+  /* NAV */
+  .nav{
+    position:sticky;top:0;z-index:30;
+    height:64px;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 clamp(16px,6vw,48px);
+    background:rgba(10,18,38,.62);
+    backdrop-filter:blur(18px) saturate(1.4);
+    -webkit-backdrop-filter:blur(18px) saturate(1.4);
+    border-bottom:1px solid var(--card-border);
+  }
+  body.light .nav{background:rgba(255,255,255,.72)}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:-.02em;font-size:1.05rem}
+  .brand-mark{
+    width:36px;height:36px;border-radius:11px;
+    background:var(--accent-grad);
+    display:grid;place-items:center;
+    color:#fff;font-family:Space Grotesk,sans-serif;font-weight:700;font-size:1.15rem;
+    box-shadow:0 8px 18px rgba(106,117,255,.35);
+  }
+  .brand small{font-weight:700;color:var(--muted);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;margin-left:2px}
+  .nav-actions{display:flex;align-items:center;gap:10px}
+  .icon-btn, .theme-btn{
+    border:1px solid var(--card-border);
+    background:var(--pill);
+    backdrop-filter:blur(12px);
+    color:var(--text);
+    border-radius:999px;
+    cursor:pointer;
+    display:inline-flex;align-items:center;gap:7px;
+    font-weight:800;font-size:.82rem;
+    padding:8px 14px;
+    transition:.2s;
+  }
+  .icon-btn:hover,.theme-btn:hover{transform:translateY(-1px);border-color:rgba(106,117,255,.35)}
+  .icon-btn:active,.theme-btn:active{transform:scale(.97)}
+  /* HERO */
+  .hero{max-width:860px;margin:0 auto;padding:42px 6% 10px;text-align:center}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:.68rem;font-weight:900;letter-spacing:.16em;text-transform:uppercase;
+    color:#6ad7ff;
+    background:rgba(106,213,255,.10);
+    border:1px solid rgba(106,213,255,.22);
+    padding:6px 12px;border-radius:999px;
+    margin-bottom:14px;
+  }
+  body.light .eyebrow{color:#4e58c7;background:#eef0ff;border-color:rgba(78,88,199,.14)}
+  .hero h1{
+    font-size:clamp(30px,5.4vw,50px);
+    font-weight:900;letter-spacing:-.045em;line-height:1.06;
+    margin-bottom:10px;
+  }
+  .hero h1 b{background:var(--accent-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .hero p{color:var(--muted);font-size:.96rem;line-height:1.6;max-width:560px;margin:0 auto}
+  .meta-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:16px}
+  .rate-badge{
+    display:inline-flex;align-items:center;gap:7px;
+    padding:7px 14px;border-radius:999px;
+    background:rgba(106,117,255,.12);
+    border:1px solid rgba(106,117,255,.28);
+    font-size:.78rem;font-weight:900;letter-spacing:-.01em;
+    color:#7fdfff;
+  }
+  body.light .rate-badge{color:#4e58c7;background:#eef0ff}
+  .live-dot{width:7px;height:7px;border-radius:50%;background:#34e0c0;box-shadow:0 0 10px #34e0c0;animation:pulse 1.6s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
+  /* MAIN */
+  .wrap{max-width:1160px;margin:0 auto;padding:22px clamp(16px,5vw,36px) 64px}
+  .toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:18px}
+  .search-wrap{position:relative;flex:1;min-width:240px;max-width:420px}
+  .search-wrap span{position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:.55;font-size:1rem;pointer-events:none}
+  .search{
+    width:100%;padding:12px 14px 12px 38px;
+    border-radius:16px;
+    border:1px solid var(--card-border);
+    background:var(--card);
+    backdrop-filter:blur(16px);
+    color:var(--text);font-size:.9rem;outline:none;
+    box-shadow:var(--shadow);
+    transition:.2s;
+  }
+  .search::placeholder{color:var(--muted)}
+  .search:focus{border-color:rgba(106,117,255,.45);box-shadow:0 0 0 4px rgba(106,117,255,.12), var(--shadow)}
+  .filter-pills{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{
+    padding:8px 14px;border-radius:999px;
+    border:1px solid var(--pill-border);
+    background:var(--pill);
+    color:var(--muted);font-weight:800;font-size:.78rem;
+    cursor:pointer;transition:.18s;backdrop-filter:blur(10px);
+  }
+  .chip.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+  body.light .chip.active{background:#1f2740;color:#fff}
+  .count{font-size:.78rem;color:var(--muted);font-weight:700}
+  /* GRID */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:14px}
+  @media(max-width:560px){.grid{grid-template-columns:repeat(2,1fr);gap:11px}}
+  .card{
+    position:relative;
+    background:var(--card);
+    backdrop-filter:blur(18px) saturate(1.3);
+    -webkit-backdrop-filter:blur(18px) saturate(1.3);
+    border:1px solid var(--card-border);
+    border-radius:22px;
+    padding:10px 10px 12px;
+    cursor:pointer;
+    box-shadow:var(--shadow);
+    transition:transform .2s, border-color .2s, box-shadow .2s;
+    overflow:hidden;
+  }
+  .card::before{
+    content:"";position:absolute;inset:0;border-radius:inherit;
+    background:linear-gradient(180deg, rgba(255,255,255,.10), transparent 55%);
+    pointer-events:none;opacity:.55;
+  }
+  body.light .card::before{opacity:.9;background:linear-gradient(180deg, rgba(255,255,255,.9), transparent 60%)}
+  .card:hover{transform:translateY(-4px);border-color:rgba(106,213,255,.45);box-shadow:0 20px 44px rgba(0,0,0,.28)}
+  body.light .card:hover{box-shadow:0 20px 44px rgba(60,72,130,.14)}
+  .thumb{position:relative;border-radius:15px;overflow:hidden;aspect-ratio:1;background:#132040}
+  .thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s}
+  .card:hover .thumb img{transform:scale(1.05)}
+  .badge{
+    position:absolute;top:9px;left:9px;
+    padding:4px 8px;border-radius:999px;
+    font-size:.60rem;font-weight:900;letter-spacing:.06em;color:#fff;
+    background:linear-gradient(135deg,#ff5a8a,#ff8f3d);
+    box-shadow:0 4px 12px rgba(255,90,138,.4);
+  }
+  .badge.promo{background:linear-gradient(135deg,#6a75ff,#2bb8e6)}
+  .thumb-meta{
+    position:absolute;bottom:0;left:0;right:0;
+    padding:8px 9px;
+    background:linear-gradient(180deg, transparent, rgba(0,0,0,.55));
+    display:flex;align-items:center;justify-content:space-between;
+    color:#fff;font-size:.68rem;font-weight:800;
+  }
+  .thumb-meta i{font-style:normal;opacity:.9}
+  .card-title{display:block;font-size:.92rem;font-weight:900;letter-spacing:-.02em;line-height:1.25;margin:10px 4px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card-sub{font-size:.73rem;color:var(--muted);margin-left:4px;display:flex;align-items:center;gap:6px}
+  .dot{width:5px;height:5px;border-radius:50%;background:#34e0c0;display:inline-block}
+  .empty{grid-column:1/-1;text-align:center;padding:40px 16px;color:var(--muted);font-weight:700}
+  /* DIALOG */
+  dialog{
+    width:min(560px,96vw);max-height:90vh;
+    border:1px solid var(--card-border);
+    background:var(--modal);
+    backdrop-filter:blur(22px) saturate(1.3);
+    -webkit-backdrop-filter:blur(22px) saturate(1.3);
+    color:var(--text);
+    border-radius:26px;
+    padding:0;
+    margin:auto;
+    box-shadow:0 30px 80px rgba(0,0,0,.55);
+    overflow:hidden;
+    animation:pop .26s ease;
+  }
+  @keyframes pop{from{transform:translateY(8px) scale(.98);opacity:0}to{transform:none;opacity:1}}
+  dialog::backdrop{background:rgba(4,10,24,.62);backdrop-filter:blur(8px)}
+  body.light dialog::backdrop{background:rgba(31,39,64,.28)}
+  .dlg-head{
+    display:flex;align-items:center;gap:12px;
+    padding:18px 20px 14px;
+    border-bottom:1px solid var(--card-border);
+    position:sticky;top:0;background:inherit;z-index:1;
+  }
+  .dlg-thumb{width:46px;height:46px;border-radius:12px;object-fit:cover;flex-shrink:0;background:#132040}
+  .dlg-title{flex:1;min-width:0}
+  .dlg-title h3{font-size:1rem;font-weight:900;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dlg-title p{font-size:.74rem;color:var(--muted);margin-top:2px}
+  .close{
+    width:36px;height:36px;border-radius:999px;
+    border:1px solid var(--card-border);background:var(--pill);
+    color:var(--muted);font-size:1.3rem;line-height:1;
+    cursor:pointer;display:grid;place-items:center;flex-shrink:0;
+  }
+  .dlg-body{padding:16px 20px 20px;overflow:auto;max-height:calc(90vh - 78px)}
+  .label{font-size:.69rem;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px}
+  .label:first-child{margin-top:4px}
+  .servers{display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}
+  .servers::-webkit-scrollbar{display:none}
+  .srv{
+    flex-shrink:0;
+    padding:8px 13px;border-radius:999px;
+    border:1px solid var(--pill-border);
+    background:var(--pill);
+    color:var(--text);font-weight:800;font-size:.78rem;
+    cursor:pointer;transition:.18s;white-space:nowrap;
+  }
+  .srv.active{background:var(--accent-grad);color:#fff;border-color:transparent;box-shadow:0 8px 18px rgba(106,117,255,.32)}
+  .form-grid{display:grid;gap:8px}
+  .form-grid.cols2{grid-template-columns:1.2fr .9fr}
+  @media(max-width:420px){.form-grid.cols2{grid-template-columns:1fr}}
+  .field label{font-size:.72rem;font-weight:800;color:var(--muted);margin-left:2px}
+  .field input{
+    width:100%;margin-top:4px;
+    padding:11px 12px;border-radius:12px;
+    border:1px solid var(--card-border);
+    background:var(--input-bg);
+    color:var(--text);font-size:.88rem;outline:none;transition:.18s;
+  }
+  .field input::placeholder{color:var(--muted-2)}
+  .field input:focus{border-color:rgba(106,117,255,.5);box-shadow:0 0 0 4px rgba(106,117,255,.12)}
+  .hint{font-size:.71rem;color:var(--muted);margin-top:4px;margin-left:2px}
+  .packs{
+    display:grid;grid-template-columns:repeat(2,1fr);gap:8px;
+    max-height:242px;overflow:auto;padding:2px 2px 2px 0;
+  }
+  .packs::-webkit-scrollbar{width:6px}
+  .packs::-webkit-scrollbar-thumb{background:var(--card-border);border-radius:999px}
+  .pack{
+    text-align:left;
+    border:1px solid var(--card-border);
+    background:var(--pill);
+    border-radius:14px;
+    padding:11px 11px 10px;
+    cursor:pointer;transition:.18s;
+    position:relative;overflow:hidden;
+  }
+  .pack:hover{border-color:rgba(106,117,255,.28);transform:translateY(-1px)}
+  .pack.active{border-color:#5ad4ff;background:rgba(90,212,255,.12);box-shadow:0 0 0 3px rgba(90,212,255,.14) inset}
+  body.light .pack.active{background:#eef6ff}
+  .pack-name{font-size:.82rem;font-weight:900;letter-spacing:-.01em;line-height:1.2}
+  .pack-usd{font-size:.70rem;color:var(--muted);margin-top:2px}
+  .pack-mmk{display:block;margin-top:6px;font-size:.84rem;font-weight:900;color:#2ec4dc}
+  body.light .pack-mmk{color:#4e58c7}
+  .pack-check{
+    position:absolute;top:8px;right:8px;
+    width:18px;height:18px;border-radius:50%;
+    border:1.5px solid var(--card-border);
+    display:grid;place-items:center;font-size:.68rem;color:transparent;
+    background:var(--pill);
+  }
+  .pack.active .pack-check{background:var(--accent-grad);border-color:transparent;color:#fff}
+  .summary{
+    margin-top:14px;
+    border:1px dashed var(--card-border);
+    background:var(--pill);
+    border-radius:14px;
+    padding:12px 13px;
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+  }
+  .summary small{color:var(--muted);font-size:.72rem;font-weight:700}
+  .summary strong{font-size:.95rem;font-weight:900}
+  .cta{
+    width:100%;margin-top:14px;
+    padding:14px 16px;border-radius:14px;border:none;
+    background:var(--accent-grad);color:#fff;
+    font-weight:900;font-size:.95rem;letter-spacing:-.01em;
+    cursor:pointer;box-shadow:0 12px 24px rgba(106,117,255,.32);
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    transition:.18s;
+  }
+  .cta:hover{transform:translateY(-1px);filter:brightness(1.04)}
+  .cta:active{transform:scale(.99)}
+  .cta:disabled{opacity:.5;cursor:not-allowed;transform:none}
+  .foot-note{text-align:center;font-size:.71rem;color:var(--muted);margin-top:10px;line-height:1.5}
+  .toast{
+    position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(12px);
+    background:var(--text);color:var(--bg);
+    padding:10px 14px;border-radius:999px;
+    font-size:.82rem;font-weight:800;
+    box-shadow:var(--shadow);
+    opacity:0;pointer-events:none;transition:.25s;z-index:50;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="brand"><div class="brand-mark">◇</div> Gamepay Hub <small>Glass</small></div>
+  <div class="nav-actions">
+    <button class="theme-btn" id="themeBtn" type="button" aria-label="Toggle theme">🌓 Theme</button>
+  </div>
+</header>
 
+<section class="hero">
+  <div class="eyebrow"><span class="live-dot"></span> Instant top-up · Myanmar first</div>
+  <h1>Top up with a <b>lighter touch.</b></h1>
+  <p>Soft liquid glass for every game. Pick your server, choose a pack, and send a structured order straight to Telegram.</p>
+  <div class="meta-row">
+    <div class="rate-badge">⚡ $1 = 4,390 MMK · Auto-calculated</div>
+    <div class="rate-badge" style="background:rgba(52,224,192,.12);border-color:rgba(52,224,192,.22);color:#34e0c0">● Live catalog · 6 games</div>
+  </div>
+</section>
 
+<main class="wrap">
+  <div class="toolbar">
+    <label class="search-wrap" aria-label="Search games">
+      <span>⌕</span>
+      <input id="search" class="search" type="search" placeholder="Search games, gift cards..." autocomplete="off">
+    </label>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div class="filter-pills" id="filterPills">
+        <button class="chip active" data-filter="all" type="button">All</button>
+        <button class="chip" data-filter="Mobile Game" type="button">Mobile</button>
+        <button class="chip" data-filter="RPG" type="button">RPG</button>
+        <button class="chip" data-filter="Gift Card" type="button">Gift Cards</button>
+      </div>
+      <span class="count" id="count"></span>
+    </div>
+  </div>
+  <div class="grid" id="grid"></div>
+</main>
 
+<dialog id="dlg">
+  <div class="dlg-head">
+    <img id="dlgImg" class="dlg-thumb" alt="">
+    <div class="dlg-title">
+      <h3 id="dlgTitle">Game</h3>
+      <p id="dlgSub">Category</p>
+    </div>
+    <button class="close" type="button" onclick="dlg.close()" aria-label="Close">×</button>
+  </div>
+  <div class="dlg-body">
+    <div id="serverBlock" style="display:none">
+      <div class="label">Select region / server</div>
+      <div class="servers" id="servers"></div>
+      <div class="hint" id="serverHint"></div>
+    </div>
 
-   1 <!doctype html>
-    2 <html lang="en">
-    3 <head>
-    4 <meta charset="UTF-8">
-    5 <meta name="viewport" content="width=device-width, initial-scale=1">
-    6 <meta name="color-scheme" content="light dark">
-    7 <title>Gamepay Hub · Soft Liquid Glassmorphism</title>
-    8 <link rel="preconnect" href="https://fonts.googleapis.com">
-    9 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800;900&family=Space+Grotesk:wg
-      ht@700&display=swap" rel="stylesheet">
-   10 <style>
-   11   :root{
-   12     --bg:#070d1e;
-   13     --bg-grad:
-   14       radial-gradient(900px 600px at 8% -6%, rgba(91,112,255,.28), transparent 60%),
-   15       radial-gradient(700px 520px at 96% 8%, rgba(255,92,138,.22), transparent 60%),
-   16       radial-gradient(900px 700px at 50% 102%, rgba(32,197,168,.18), transparent 60%),
-   17       linear-gradient(180deg,#0a1430 0%, #070d1e 55%, #060c1c 100%);
-   18     --card:rgba(255,255,255,.07);
-   19     --card-solid:rgba(18,32,62,.82);
-   20     --card-border:rgba(255,255,255,.11);
-   21     --text:#eef3ff;
-   22     --muted:#8ea0c2;
-   23     --muted-2:#6d7ea3;
-   24     --accent:#6a75ff;
-   25     --accent-2:#2ec4dc;
-   26     --accent-grad:linear-gradient(135deg,#6a75ff 0%, #2bb8e6 52%, #34e0c0 100%);
-   27     --pill:rgba(255,255,255,.07);
-   28     --pill-border:rgba(255,255,255,.10);
-   29     --input-bg:rgba(255,255,255,.06);
-   30     --modal:rgba(16,30,58,.92);
-   31     --shadow:0 18px 42px rgba(0,0,0,.42), 0 2px 10px rgba(0,0,0,.25);
-   32     --radius-xl:22px;
-   33     --radius-lg:16px;
-   34   }
-   35   body.light{
-   36     --bg:#f6f7ff;
-   37     --bg-grad:
-   38       radial-gradient(900px 600px at 6% -4%, rgba(106,117,255,.18), transparent 60%),
-   39       radial-gradient(700px 520px at 96% 6%, rgba(255,122,162,.16), transparent 60%),
-   40       radial-gradient(900px 700px at 50% 102%, rgba(52,224,192,.14), transparent 60%),
-   41       linear-gradient(180deg,#f7f8ff 0%, #eef1ff 55%, #f6f7ff 100%);
-   42     --card:rgba(255,255,255,.86);
-   43     --card-solid:#ffffff;
-   44     --card-border:rgba(37,47,86,.08);
-   45     --text:#1f2740;
-   46     --muted:#6b7696;
-   47     --muted-2:#8a94b8;
-   48     --pill:rgba(255,255,255,.9);
-   49     --pill-border:rgba(37,47,86,.08);
-   50     --input-bg:#f1f3ff;
-   51     --modal:rgba(255,255,255,.96);
-   52     --shadow:0 18px 40px rgba(60,72,130,.12), 0 2px 10px rgba(60,72,130,.08);
-   53   }
-   54   *{box-sizing:border-box;margin:0;padding:0}
-   55   html{scrollbar-gutter:stable}
-   56   body{
-   57     font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-   58     background:var(--bg-grad), var(--bg);
-   59     background-attachment:fixed;
-   60     color:var(--text);
-   61     min-height:100vh;
-   62     -webkit-font-smoothing:antialiased;
-   63     transition: background .35s, color .3s;
-   64   }
-   65   a{color:inherit}
-   66   /* NAV */
-   67   .nav{
-   68     position:sticky;top:0;z-index:30;
-   69     height:64px;
-   70     display:flex;align-items:center;justify-content:space-between;
-   71     padding:0 clamp(16px,6vw,48px);
-   72     background:rgba(10,18,38,.62);
-   73     backdrop-filter:blur(18px) saturate(1.4);
-   74     -webkit-backdrop-filter:blur(18px) saturate(1.4);
-   75     border-bottom:1px solid var(--card-border);
-   76   }
-   77   body.light .nav{background:rgba(255,255,255,.72)}
-   78   .brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:-.02em;font-size:1.05r
-      em}
-   79   .brand-mark{
-   80     width:36px;height:36px;border-radius:11px;
-   81     background:var(--accent-grad);
-   82     display:grid;place-items:center;
-   83     color:#fff;font-family:Space Grotesk,sans-serif;font-weight:700;font-size:1.15rem;
-   84     box-shadow:0 8px 18px rgba(106,117,255,.35);
-   85   }
-   86   .brand small{font-weight:700;color:var(--muted);font-size:.72rem;letter-spacing:.08em;text-transform:
-      uppercase;margin-left:2px}
-   87   .nav-actions{display:flex;align-items:center;gap:10px}
-   88   .icon-btn, .theme-btn{
-   89     border:1px solid var(--card-border);
-   90     background:var(--pill);
-   91     backdrop-filter:blur(12px);
-   92     color:var(--text);
-   93     border-radius:999px;
-   94     cursor:pointer;
-   95     display:inline-flex;align-items:center;gap:7px;
-   96     font-weight:800;font-size:.82rem;
-   97     padding:8px 14px;
-   98     transition:.2s;
-   99   }
-  100   .icon-btn:hover,.theme-btn:hover{transform:translateY(-1px);border-color:rgba(106,117,255,.35)}
-  101   .icon-btn:active,.theme-btn:active{transform:scale(.97)}
-  102   /* HERO */
-  103   .hero{max-width:860px;margin:0 auto;padding:42px 6% 10px;text-align:center}
-  104   .eyebrow{
-  105     display:inline-flex;align-items:center;gap:8px;
-  106     font-size:.68rem;font-weight:900;letter-spacing:.16em;text-transform:uppercase;
-  107     color:#6ad7ff;
-  108     background:rgba(106,213,255,.10);
-  109     border:1px solid rgba(106,213,255,.22);
-  110     padding:6px 12px;border-radius:999px;
-  111     margin-bottom:14px;
-  112   }
-  113   body.light .eyebrow{color:#4e58c7;background:#eef0ff;border-color:rgba(78,88,199,.14)}
-  114   .hero h1{
-  115     font-size:clamp(30px,5.4vw,50px);
-  116     font-weight:900;letter-spacing:-.045em;line-height:1.06;
-  117     margin-bottom:10px;
-  118   }
-  119   .hero h1 b{background:var(--accent-grad);-webkit-background-clip:text;-webkit-text-fill-color:transpa
-      rent;background-clip:text}
-  120   .hero p{color:var(--muted);font-size:.96rem;line-height:1.6;max-width:560px;margin:0 auto}
-  121   .meta-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:16px}
-  122   .rate-badge{
-  123     display:inline-flex;align-items:center;gap:7px;
-  124     padding:7px 14px;border-radius:999px;
-  125     background:rgba(106,117,255,.12);
-  126     border:1px solid rgba(106,117,255,.28);
-  127     font-size:.78rem;font-weight:900;letter-spacing:-.01em;
-  128     color:#7fdfff;
-  129   }
-  130   body.light .rate-badge{color:#4e58c7;background:#eef0ff}
-  131   .live-dot{width:7px;height:7px;border-radius:50%;background:#34e0c0;box-shadow:0 0 10px #34e0c0;anima
-      tion:pulse 1.6s infinite}
-  132   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
-  133   /* MAIN */
-  134   .wrap{max-width:1160px;margin:0 auto;padding:22px clamp(16px,5vw,36px) 64px}
-  135   .toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin
-      -bottom:18px}
-  136   .search-wrap{position:relative;flex:1;min-width:240px;max-width:420px}
-  137   .search-wrap span{position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:.55;font-siz
-      e:1rem;pointer-events:none}
-  138   .search{
-  139     width:100%;padding:12px 14px 12px 38px;
-  140     border-radius:16px;
-  141     border:1px solid var(--card-border);
-  142     background:var(--card);
-  143     backdrop-filter:blur(16px);
-  144     color:var(--text);font-size:.9rem;outline:none;
-  145     box-shadow:var(--shadow);
-  146     transition:.2s;
-  147   }
-  148   .search::placeholder{color:var(--muted)}
-  149   .search:focus{border-color:rgba(106,117,255,.45);box-shadow:0 0 0 4px rgba(106,117,255,.12), var(--sh
-      adow)}
-  150   .filter-pills{display:flex;gap:8px;flex-wrap:wrap}
-  151   .chip{
-  152     padding:8px 14px;border-radius:999px;
-  153     border:1px solid var(--pill-border);
-  154     background:var(--pill);
-  155     color:var(--muted);font-weight:800;font-size:.78rem;
-  156     cursor:pointer;transition:.18s;backdrop-filter:blur(10px);
-  157   }
-  158   .chip.active{background:var(--text);color:var(--bg);border-color:var(--text)}
-  159   body.light .chip.active{background:#1f2740;color:#fff}
-  160   .count{font-size:.78rem;color:var(--muted);font-weight:700}
-  161   /* GRID */
-  162   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:14px}
-  163   @media(max-width:560px){.grid{grid-template-columns:repeat(2,1fr);gap:11px}}
-  164   .card{
-  165     position:relative;
-  166     background:var(--card);
-  167     backdrop-filter:blur(18px) saturate(1.3);
-  168     -webkit-backdrop-filter:blur(18px) saturate(1.3);
-  169     border:1px solid var(--card-border);
-  170     border-radius:22px;
-  171     padding:10px 10px 12px;
-  172     cursor:pointer;
-  173     box-shadow:var(--shadow);
-  174     transition:transform .2s, border-color .2s, box-shadow .2s;
-  175     overflow:hidden;
-  176   }
-  177   .card::before{
-  178     content:"";position:absolute;inset:0;border-radius:inherit;
-  179     background:linear-gradient(180deg, rgba(255,255,255,.10), transparent 55%);
-  180     pointer-events:none;opacity:.55;
-  181   }
-  182   body.light .card::before{opacity:.9;background:linear-gradient(180deg, rgba(255,255,255,.9), transpar
-      ent 60%)}
-  183   .card:hover{transform:translateY(-4px);border-color:rgba(106,213,255,.45);box-shadow:0 20px 44px rgba
-      (0,0,0,.28)}
-  184   body.light .card:hover{box-shadow:0 20px 44px rgba(60,72,130,.14)}
-  185   .thumb{position:relative;border-radius:15px;overflow:hidden;aspect-ratio:1;background:#132040}
-  186   .thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s}
-  187   .card:hover .thumb img{transform:scale(1.05)}
-  188   .badge{
-  189     position:absolute;top:9px;left:9px;
-  190     padding:4px 8px;border-radius:999px;
-  191     font-size:.60rem;font-weight:900;letter-spacing:.06em;color:#fff;
-  192     background:linear-gradient(135deg,#ff5a8a,#ff8f3d);
-  193     box-shadow:0 4px 12px rgba(255,90,138,.4);
-  194   }
-  195   .badge.promo{background:linear-gradient(135deg,#6a75ff,#2bb8e6)}
-  196   .thumb-meta{
-  197     position:absolute;bottom:0;left:0;right:0;
-  198     padding:8px 9px;
-  199     background:linear-gradient(180deg, transparent, rgba(0,0,0,.55));
-  200     display:flex;align-items:center;justify-content:space-between;
-  201     color:#fff;font-size:.68rem;font-weight:800;
-  202   }
-  203   .thumb-meta i{font-style:normal;opacity:.9}
-  204   .card-title{display:block;font-size:.92rem;font-weight:900;letter-spacing:-.02em;line-height:1.25;mar
-      gin:10px 4px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  205   .card-sub{font-size:.73rem;color:var(--muted);margin-left:4px;display:flex;align-items:center;gap:6px
-      }
-  206   .dot{width:5px;height:5px;border-radius:50%;background:#34e0c0;display:inline-block}
-  207   .empty{grid-column:1/-1;text-align:center;padding:40px 16px;color:var(--muted);font-weight:700}
-  208   /* DIALOG */
-  209   dialog{
-  210     width:min(560px,96vw);max-height:90vh;
-  211     border:1px solid var(--card-border);
-  212     background:var(--modal);
-  213     backdrop-filter:blur(22px) saturate(1.3);
-  214     -webkit-backdrop-filter:blur(22px) saturate(1.3);
-  215     color:var(--text);
-  216     border-radius:26px;
-  217     padding:0;
-  218     margin:auto;
-  219     box-shadow:0 30px 80px rgba(0,0,0,.55);
-  220     overflow:hidden;
-  221     animation:pop .26s ease;
-  222   }
-  223   @keyframes pop{from{transform:translateY(8px) scale(.98);opacity:0}to{transform:none;opacity:1}}
-  224   dialog::backdrop{background:rgba(4,10,24,.62);backdrop-filter:blur(8px)}
-  225   body.light dialog::backdrop{background:rgba(31,39,64,.28)}
-  226   .dlg-head{
-  227     display:flex;align-items:center;gap:12px;
-  228     padding:18px 20px 14px;
-  229     border-bottom:1px solid var(--card-border);
-  230     position:sticky;top:0;background:inherit;z-index:1;
-  231   }
-  232   .dlg-thumb{width:46px;height:46px;border-radius:12px;object-fit:cover;flex-shrink:0;background:#13204
-      0}
-  233   .dlg-title{flex:1;min-width:0}
-  234   .dlg-title h3{font-size:1rem;font-weight:900;letter-spacing:-.02em;white-space:nowrap;overflow:hidden
-      ;text-overflow:ellipsis}
-  235   .dlg-title p{font-size:.74rem;color:var(--muted);margin-top:2px}
-  236   .close{
-  237     width:36px;height:36px;border-radius:999px;
-  238     border:1px solid var(--card-border);background:var(--pill);
-  239     color:var(--muted);font-size:1.3rem;line-height:1;
-  240     cursor:pointer;display:grid;place-items:center;flex-shrink:0;
-  241   }
-  242   .dlg-body{padding:16px 20px 20px;overflow:auto;max-height:calc(90vh - 78px)}
-  243   .label{font-size:.69rem;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:var(--mut
-      ed);margin:16px 0 8px}
-  244   .label:first-child{margin-top:4px}
-  245   .servers{display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}
-  246   .servers::-webkit-scrollbar{display:none}
-  247   .srv{
-  248     flex-shrink:0;
-  249     padding:8px 13px;border-radius:999px;
-  250     border:1px solid var(--pill-border);
-  251     background:var(--pill);
-  252     color:var(--text);font-weight:800;font-size:.78rem;
-  253     cursor:pointer;transition:.18s;white-space:nowrap;
-  254   }
-  255   .srv.active{background:var(--accent-grad);color:#fff;border-color:transparent;box-shadow:0 8px 18px r
-      gba(106,117,255,.32)}
-  256   .form-grid{display:grid;gap:8px}
-  257   .form-grid.cols2{grid-template-columns:1.2fr .9fr}
-  258   @media(max-width:420px){.form-grid.cols2{grid-template-columns:1fr}}
-  259   .field label{font-size:.72rem;font-weight:800;color:var(--muted);margin-left:2px}
-  260   .field input{
-  261     width:100%;margin-top:4px;
-  262     padding:11px 12px;border-radius:12px;
-  263     border:1px solid var(--card-border);
-  264     background:var(--input-bg);
-  265     color:var(--text);font-size:.88rem;outline:none;transition:.18s;
-  266   }
-  267   .field input::placeholder{color:var(--muted-2)}
-  268   .field input:focus{border-color:rgba(106,117,255,.5);box-shadow:0 0 0 4px rgba(106,117,255,.12)}
-  269   .hint{font-size:.71rem;color:var(--muted);margin-top:4px;margin-left:2px}
-  270   .packs{
-  271     display:grid;grid-template-columns:repeat(2,1fr);gap:8px;
-  272     max-height:242px;overflow:auto;padding:2px 2px 2px 0;
-  273   }
-  274   .packs::-webkit-scrollbar{width:6px}
-  275   .packs::-webkit-scrollbar-thumb{background:var(--card-border);border-radius:999px}
-  276   .pack{
-  277     text-align:left;
-  278     border:1px solid var(--card-border);
-  279     background:var(--pill);
-  280     border-radius:14px;
-  281     padding:11px 11px 10px;
-  282     cursor:pointer;transition:.18s;
-  283     position:relative;overflow:hidden;
-  284   }
-  285   .pack:hover{border-color:rgba(106,117,255,.28);transform:translateY(-1px)}
-  286   .pack.active{border-color:#5ad4ff;background:rgba(90,212,255,.12);box-shadow:0 0 0 3px rgba(90,212,25
-      5,.14) inset}
-  287   body.light .pack.active{background:#eef6ff}
-  288   .pack-name{font-size:.82rem;font-weight:900;letter-spacing:-.01em;line-height:1.2}
-  289   .pack-usd{font-size:.70rem;color:var(--muted);margin-top:2px}
-  290   .pack-mmk{display:block;margin-top:6px;font-size:.84rem;font-weight:900;color:#2ec4dc}
-  291   body.light .pack-mmk{color:#4e58c7}
-  292   .pack-check{
-  293     position:absolute;top:8px;right:8px;
-  294     width:18px;height:18px;border-radius:50%;
-  295     border:1.5px solid var(--card-border);
-  296     display:grid;place-items:center;font-size:.68rem;color:transparent;
-  297     background:var(--pill);
-  298   }
-  299   .pack.active .pack-check{background:var(--accent-grad);border-color:transparent;color:#fff}
-  300   .summary{
-  301     margin-top:14px;
-  302     border:1px dashed var(--card-border);
-  303     background:var(--pill);
-  304     border-radius:14px;
-  305     padding:12px 13px;
-  306     display:flex;align-items:center;justify-content:space-between;gap:10px;
-  307   }
-  308   .summary small{color:var(--muted);font-size:.72rem;font-weight:700}
-  309   .summary strong{font-size:.95rem;font-weight:900}
-  310   .cta{
-  311     width:100%;margin-top:14px;
-  312     padding:14px 16px;border-radius:14px;border:none;
-  313     background:var(--accent-grad);color:#fff;
-  314     font-weight:900;font-size:.95rem;letter-spacing:-.01em;
-  315     cursor:pointer;box-shadow:0 12px 24px rgba(106,117,255,.32);
-  316     display:flex;align-items:center;justify-content:center;gap:8px;
-  317     transition:.18s;
-  318   }
-  319   .cta:hover{transform:translateY(-1px);filter:brightness(1.04)}
-  320   .cta:active{transform:scale(.99)}
-  321   .cta:disabled{opacity:.5;cursor:not-allowed;transform:none}
-  322   .foot-note{text-align:center;font-size:.71rem;color:var(--muted);margin-top:10px;line-height:1.5}
-  323   .toast{
-  324     position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(12px);
-  325     background:var(--text);color:var(--bg);
-  326     padding:10px 14px;border-radius:999px;
-  327     font-size:.82rem;font-weight:800;
-  328     box-shadow:var(--shadow);
-  329     opacity:0;pointer-events:none;transition:.25s;z-index:50;
-  330   }
-  331   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-  332 </style>
-  333 </head>
-  334 <body>
-  335 <header class="nav">
-  336   <div class="brand"><div class="brand-mark">◇</div> Gamepay Hub <small>Glass</small></div>
-  337   <div class="nav-actions">
-  338     <button class="theme-btn" id="themeBtn" type="button" aria-label="Toggle theme">🌓 Theme</button>
-  339   </div>
-  340 </header>
-  341
-  342 <section class="hero">
-  343   <div class="eyebrow"><span class="live-dot"></span> Instant top-up · Myanmar first</div>
-  344   <h1>Top up with a <b>lighter touch.</b></h1>
-  345   <p>Soft liquid glass for every game. Pick your server, choose a pack, and send a structured order str
-      aight to Telegram.</p>
-  346   <div class="meta-row">
-  347     <div class="rate-badge">⚡ $1 = 4,390 MMK · Auto-calculated</div>
-  348     <div class="rate-badge" style="background:rgba(52,224,192,.12);border-color:rgba(52,224,192,.22);co
-      lor:#34e0c0">● Live catalog · 6 games</div>
-  349   </div>
-  350 </section>
-  351
-  352 <main class="wrap">
-  353   <div class="toolbar">
-  354     <label class="search-wrap" aria-label="Search games">
-  355       <span>⌕</span>
-  356       <input id="search" class="search" type="search" placeholder="Search games, gift cards..." autocom
-      plete="off">
-  357     </label>
-  358     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-  359       <div class="filter-pills" id="filterPills">
-  360         <button class="chip active" data-filter="all" type="button">All</button>
-  361         <button class="chip" data-filter="Mobile Game" type="button">Mobile</button>
-  362         <button class="chip" data-filter="RPG" type="button">RPG</button>
-  363         <button class="chip" data-filter="Gift Card" type="button">Gift Cards</button>
-  364       </div>
-  365       <span class="count" id="count"></span>
-  366     </div>
-  367   </div>
-  368   <div class="grid" id="grid"></div>
-  369 </main>
-  370
-  371 <dialog id="dlg">
-  372   <div class="dlg-head">
-  373     <img id="dlgImg" class="dlg-thumb" alt="">
-  374     <div class="dlg-title">
-  375       <h3 id="dlgTitle">Game</h3>
-  376       <p id="dlgSub">Category</p>
-  377     </div>
-  378     <button class="close" type="button" onclick="dlg.close()" aria-label="Close">×</button>
-  379   </div>
-  380   <div class="dlg-body">
-  381     <div id="serverBlock" style="display:none">
-  382       <div class="label">Select region / server</div>
-  383       <div class="servers" id="servers"></div>
-  384       <div class="hint" id="serverHint"></div>
-  385     </div>
-  386
-  387     <div class="label">Account details</div>
-  388     <div id="form" class="form-grid"></div>
-  389
-  390     <div class="label">Select package — MMK auto-converted</div>
-  391     <div class="packs" id="packs"></div>
-  392
-  393     <div class="summary" id="summary">
-  394       <div>
-  395         <small>Selected pack</small>
-  396         <div id="sumName" style="font-weight:900;font-size:.88rem;margin-top:2px">— choose a pack —</di
-      v>
-  397         <small id="sumUsd"></small>
-  398       </div>
-  399       <strong id="sumMmk">— MMK</strong>
-  400     </div>
-  401
-  402     <button class="cta" id="cta" type="button">↗ Order via Telegram</button>
-  403     <p class="foot-note">Opens <b>t.me/YOUR_USERNAME</b> with a pre-filled message. Replace <code>YOUR_
-      USERNAME</code> in the source with your Telegram username.</p>
-  404   </div>
-  405 </dialog>
-  406
-  407 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  408
-  409 <script>
-  410 const EXCHANGE_RATE = 4390;
-  411 const TELEGRAM_USERNAME = "YOUR_USERNAME";
-  412
-  413 const CATALOG = [
-  414   {
-  415     id:"mlbb", name:"Mobile Legends: Bang Bang", category:"Mobile Game", badge:"POPULAR",
-  416     image:"https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=400&fit=crop",
-  417     hint:"MLBB diamond packs vary by login region. Myanmar Promo is discounted.",
-  418     fields:[
-  419       {id:"userId", label:"User ID", placeholder:"e.g. 12345678", type:"text"},
-  420       {id:"zoneId", label:"Zone ID", placeholder:"e.g. 1234", type:"text"}
-  421     ],
-  422     servers:[
-  423       { name:"🌐 Global", packages:[
-  424         {name:"86 Diamonds", usd:1.25},{name:"172 Diamonds", usd:2.45},{name:"257 Diamonds", usd:3.65},
-      {name:"344 Diamonds", usd:4.90},{name:"706 Diamonds", usd:9.80},{name:"Weekly Diamond Pass", usd:1.95},
-      {name:"Twilight Pass", usd:8.90}
-  425       ]},
-  426       { name:"🇧🇷 Brazil", packages:[
-  427         {name:"86 Diamonds (BR)", usd:1.15},{name:"172 Diamonds (BR)", usd:2.25},{name:"257 Diamonds (B
-      R)", usd:3.40},{name:"706 Diamonds (BR)", usd:9.20},{name:"Weekly Pass (BR)", usd:1.85}
-  428       ]},
-  429       { name:"🇲🇲 Myanmar Promo", packages:[
-  430         {name:"50 Diamonds (Special)", usd:0.70},{name:"150 Diamonds (Special)", usd:2.05},{name:"300 D
-      iamonds (Special)", usd:3.95},{name:"500 Diamonds (Special)", usd:6.80}
-  431       ]},
-  432       { name:"🇮🇩 Indonesia", packages:[
-  433         {name:"86 Diamonds (ID)", usd:1.18},{name:"172 Diamonds (ID)", usd:2.30},{name:"257 Diamonds (I
-      D)", usd:3.48},{name:"Weekly Pass (ID)", usd:1.88},{name:"Starlight Member", usd:7.50}
-  434       ]},
-  435       { name:"🇵🇭 Philippines", packages:[
-  436         {name:"86 Diamonds (PH)", usd:1.22},{name:"172 Diamonds (PH)", usd:2.40},{name:"344 Diamonds (P
-      H)", usd:4.75},{name:"Weekly Pass (PH)", usd:1.90}
-  437       ]}
-  438     ]
-  439   },
-  440   {
-  441     id:"pubg", name:"PUBG Mobile", category:"Mobile Game", badge:"HOT",
-  442     image:"https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&h=400&fit=crop",
-  443     fields:[{id:"playerId", label:"Player ID", placeholder:"e.g. 512345678", type:"text"}],
-  444     servers:[{ name:"Global", packages:[
-  445       {name:"60 UC", usd:0.95},{name:"325 UC", usd:4.80},{name:"660 UC", usd:9.50},{name:"1800 UC", usd
-      :24.50},{name:"Royale Pass", usd:9.90}
-  446     ]}]
-  447   },
-  448   {
-  449     id:"freefire", name:"Free Fire", category:"Mobile Game", badge:null,
-  450     image:"https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=400&h=400&fit=crop",
-  451     fields:[{id:"playerId", label:"Player ID", placeholder:"e.g. 10293847", type:"text"}],
-  452     servers:[{ name:"Global", packages:[
-  453       {name:"100 Diamonds", usd:0.90},{name:"310 Diamonds", usd:2.70},{name:"520 Diamonds", usd:4.50},{
-      name:"1060 Diamonds", usd:8.90},{name:"Weekly Membership", usd:2.10}
-  454     ]}]
-  455   },
-  456   {
-  457     id:"genshin", name:"Genshin Impact", category:"RPG", badge:"NEW",
-  458     image:"https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400&h=400&fit=crop",
-  459     fields:[{id:"uid", label:"UID", placeholder:"e.g. 700123456", type:"text"}],
-  460     servers:[{ name:"Global", packages:[
-  461       {name:"300 Genesis Crystal", usd:4.99},{name:"980 Genesis Crystal", usd:14.99},{name:"1980 Genesi
-      s Crystal", usd:29.99},{name:"Blessing of the Welkin Moon", usd:4.99},{name:"6480 Genesis Crystal", usd
-      :99.99}
-  462     ]}]
-  463   },
-  464   {
-  465     id:"steam", name:"Steam Wallet", category:"Gift Card", badge:null,
-  466     image:"https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=400&h=400&fit=crop",
-  467     fields:[{id:"email", label:"Delivery Email", placeholder:"For voucher delivery — e.g. you@mail.com"
-      , type:"email"}],
-  468     servers:[{ name:"Global USD", packages:[
-  469       {name:"$5 Steam Code", usd:5.10},{name:"$10 Steam Code", usd:10.20},{name:"$20 Steam Code", usd:2
-      0.30},{name:"$50 Steam Code", usd:50.80}
-  470     ]}]
-  471   },
-  472   {
-  473     id:"roblox", name:"Roblox", category:"Gift Card", badge:"HOT",
-  474     image:"https://images.unsplash.com/photo-1580234811497-9df7fd2f357e?w=400&h=400&fit=crop",
-  475     fields:[{id:"email", label:"Delivery Email", placeholder:"Robux / Gift card delivery email", type:"
-      email"}],
-  476     servers:[{ name:"Global", packages:[
-  477       {name:"400 Robux", usd:4.99},{name:"800 Robux", usd:9.99},{name:"1700 Robux", usd:19.99},{name:"$
-      10 Gift Card", usd:10.00},{name:"$25 Gift Card", usd:25.00}
-  478     ]}]
-  479   }
-  480 ];
-  481
-  482 let activeGame=null, activeServer=null, activePack=null;
-  483 let textFilter="", categoryFilter="all";
-  484
-  485 const grid=document.getElementById('grid');
-  486 const search=document.getElementById('search');
-  487 const countEl=document.getElementById('count');
-  488 const dlg=document.getElementById('dlg');
-  489 const dlgTitle=document.getElementById('dlgTitle');
-  490 const dlgSub=document.getElementById('dlgSub');
-  491 const dlgImg=document.getElementById('dlgImg');
-  492 const serverBlock=document.getElementById('serverBlock');
-  493 const serversEl=document.getElementById('servers');
-  494 const serverHint=document.getElementById('serverHint');
-  495 const formEl=document.getElementById('form');
-  496 const packsEl=document.getElementById('packs');
-  497 const sumName=document.getElementById('sumName');
-  498 const sumUsd=document.getElementById('sumUsd');
-  499 const sumMmk=document.getElementById('sumMmk');
-  500 const cta=document.getElementById('cta');
-  501 const toastEl=document.getElementById('toast');
-  502
-  503 function mmk(usd){ return Math.round(usd * EXCHANGE_RATE); }
-  504 function fmt(n){ return n.toLocaleString('en-US'); }
-  505
-  506 function filtered(){
-  507   return CATALOG.filter(g=>{
-  508     const byCat = categoryFilter==="all" || g.category===categoryFilter;
-  509     const q=textFilter.trim().toLowerCase();
-  510     const byText = !q || g.name.toLowerCase().includes(q) || g.category.toLowerCase().includes(q) || g.
-      id.includes(q);
-  511     return byCat && byText;
-  512   });
-  513 }
-  514
-  515 function renderGrid(){
-  516   const list=filtered();
-  517   countEl.textContent = list.length + " / " + CATALOG.length;
-  518   if(!list.length){
-  519     grid.innerHTML='<div class="empty">No results for “'+escapeHtml(textFilter)+'”. Try another keyword
-      .</div>';
-  520     return;
-  521   }
-  522   grid.innerHTML = list.map(g=>`
-  523     <article class="card" onclick="openGame('${g.id}')" role="button" tabindex="0" onkeydown="if(event.
-      key==='Enter')openGame('${g.id}')">
-  524       ${g.badge?`<span class="badge ${g.badge==='POPULAR'?'promo':''}">${g.badge}</span>`:''}
-  525       <div class="thumb">
-  526         <img src="${g.image}" alt="${escapeHtml(g.name)}" loading="lazy" onerror="this.style.background
-      ='#1a2a4a'">
-  527         <div class="thumb-meta"><i>${escapeHtml(g.category)}</i><i>${g.servers.length>1? g.servers.leng
-      th+' servers':'Instant'}</i></div>
-  528       </div>
-  529       <strong class="card-title">${escapeHtml(g.name)}</strong>
-  530       <span class="card-sub"><span class="dot"></span> ${g.servers.length>1?'Grouped servers':'Single r
-      egion'} · from ${fmt(mmk(g.servers[0].packages[0].usd))} MMK</span>
-  531     </article>
-  532   `).join('');
-  533 }
-  534
-  535 function escapeHtml(s){ return String(s).replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"'
-      :'&quot;',"'":'&#39;' }[m])); }
-  536
-  537 window.openGame = function(id){
-  538   activeGame = CATALOG.find(g=>g.id===id);
-  539   activeServer = activeGame.servers[0];
-  540   activePack = null;
-  541   dlgTitle.textContent = activeGame.name;
-  542   dlgSub.textContent = activeGame.category + (activeGame.servers.length>1 ? " · "+activeGame.servers.le
-      ngth+" regions" : "");
-  543   dlgImg.src = activeGame.image;
-  544   dlgImg.alt = activeGame.name;
-  545
-  546   // servers
-  547   if(activeGame.servers.length>1){
-  548     serverBlock.style.display="block";
-  549     serverHint.textContent = activeGame.hint || "";
-  550     serversEl.innerHTML = activeGame.servers.map((s,i)=>`
-  551       <button type="button" class="srv ${i===0?'active':''}" onclick="switchServer(${i},this)">${escape
-      Html(s.name)}</button>
-  552     `).join('');
-  553   } else {
-  554     serverBlock.style.display="none";
-  555     serversEl.innerHTML="";
-  556   }
-  557
-  558   // form
-  559   formEl.className = "form-grid" + (activeGame.fields.length>1 ? " cols2" : "");
-  560   formEl.innerHTML = activeGame.fields.map(f=>`
-  561     <div class="field">
-  562       <label for="field_${f.id}">${escapeHtml(f.label)}</label>
-  563       <input id="field_${f.id}" type="${f.type||'text'}" placeholder="${escapeHtml(f.placeholder)}" aut
-      ocomplete="off">
-  564     </div>
-  565   `).join('');
-  566
-  567   renderPacks();
-  568   updateSummary();
-  569   dlg.showModal();
-  570 };
-  571
-  572 window.switchServer = function(idx, btn){
-  573   [...serversEl.children].forEach(b=>b.classList.remove('active'));
-  574   btn.classList.add('active');
-  575   activeServer = activeGame.servers[idx];
-  576   activePack = null;
-  577   renderPacks();
-  578   updateSummary();
-  579 };
-  580
-  581 function renderPacks(){
-  582   packsEl.innerHTML = activeServer.packages.map((p,i)=>{
-  583     const v = mmk(p.usd);
-  584     return `
-  585       <button type="button" class="pack" onclick="pickPack(${i},this)">
-  586         <span class="pack-check">✓</span>
-  587         <div class="pack-name">${escapeHtml(p.name)}</div>
-  588         <div class="pack-usd">$${p.usd.toFixed(2)} · 1 USD = ${fmt(EXCHANGE_RATE)} MMK</div>
-  589         <b class="pack-mmk">${fmt(v)} MMK</b>
-  590       </button>
-  591     `;
-  592   }).join('');
-  593 }
-  594
-  595 window.pickPack = function(idx, el){
-  596   [...packsEl.children].forEach(c=>c.classList.remove('active'));
-  597   el.classList.add('active');
-  598   activePack = activeServer.packages[idx];
-  599   updateSummary();
-  600 };
-  601
-  602 function updateSummary(){
-  603   if(!activePack){
-  604     sumName.textContent = "— choose a pack —";
-  605     sumUsd.textContent = activeServer ? activeServer.name + " · " + activeServer.packages.length + " pl
-      ans" : "";
-  606     sumMmk.textContent = "— MMK";
-  607     cta.disabled=false;
-  608     return;
-  609   }
-  610   sumName.textContent = activePack.name;
-  611   sumUsd.textContent = "$" + activePack.usd.toFixed(2) + " × " + fmt(EXCHANGE_RATE) + " =";
-  612   sumMmk.textContent = fmt(mmk(activePack.usd)) + " MMK";
-  613 }
-  614
-  615 function showToast(msg){
-  616   toastEl.textContent=msg;
-  617   toastEl.classList.add('show');
-  618   clearTimeout(showToast._t);
-  619   showToast._t=setTimeout(()=>toastEl.classList.remove('show'),2200);
-  620 }
-  621
-  622 // search + filter
-  623 let t;
-  624 search.addEventListener('input', e=>{
-  625   clearTimeout(t);
-  626   t=setTimeout(()=>{ textFilter=e.target.value; renderGrid(); }, 90);
-  627 });
-  628 document.getElementById('filterPills').addEventListener('click', e=>{
-  629   const b=e.target.closest('.chip'); if(!b) return;
-  630   document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
-  631   b.classList.add('active');
-  632   categoryFilter=b.dataset.filter;
-  633   renderGrid();
-  634 });
-  635
-  636 // telegram
-  637 cta.addEventListener('click', ()=>{
-  638   if(!activePack){ showToast("Please select a package first"); return; }
-  639   // validate fields
-  640   let lines=[];
-  641   for(const f of activeGame.fields){
-  642     const inp=document.getElementById('field_'+f.id);
-  643     const v=(inp.value||"").trim();
-  644     if(!v){
-  645       inp.focus();
-  646       inp.style.borderColor="#ff5a8a";
-  647       setTimeout(()=>inp.style.borderColor="",1200);
-  648       showToast(f.label + " is required");
-  649       return;
-  650     }
-  651     if(f.type==="email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){
-  652       inp.focus(); showToast("Enter a valid email"); return;
-  653     }
-  654     lines.push({label:f.label, value:v});
+    <div class="label">Account details</div>
+    <div id="form" class="form-grid"></div>
 
-      function selectPack(idx, elem) {
-        document.querySelectorAll(".pack").forEach(p => p.classList.remove("active"));
-        elem.classList.add("active");
-        activePack = activeServer.packages[idx];
-      }
+    <div class="label">Select package — MMK auto-converted</div>
+    <div class="packs" id="packs"></div>
 
-      // Telegram Order Trigger
-      document.getElementById("confirmOrderBtn").onclick = () => {
-        if (!activePack) return alert("ကျေးဇူးပြု၍ Package တစ်ခု ရွေးချယ်ပေးပါ");
+    <div class="summary" id="summary">
+      <div>
+        <small>Selected pack</small>
+        <div id="sumName" style="font-weight:900;font-size:.88rem;margin-top:2px">— choose a pack —</div>
+        <small id="sumUsd"></small>
+      </div>
+      <strong id="sumMmk">— MMK</strong>
+    </div>
 
-        const price = Math.round(activePack.usd * EXCHANGE_RATE).toLocaleString();
-        let msg = `🎮 *New Order Request*%0A` +
-                  `━━━━━━━━━━━━━━━━%0A` +
-                  `🕹 *Game:* ${activeGame.name}%0A` +
-                  `🌐 *Server:* ${activeServer.name}%0A` +
-                  `💎 *Package:* ${activePack.name}%0A` +
-                  `💵 *Price:* ${price} MMK%0A` +
-                  `━━━━━━━━━━━━━━━━%0A`;
+    <button class="cta" id="cta" type="button">↗ Order via Telegram</button>
+    <p class="foot-note">Opens <b>t.me/YOUR_USERNAME</b> with a pre-filled message. Replace <code>YOUR_USERNAME</code> in the source with your Telegram username.</p>
+  </div>
+</dialog>
 
-        for (let f of activeGame.fields) {
-          const val = document.getElementById(`field_${f.id}`).value.trim();
-          if (!val) return alert(`${f.label} ကို ထည့်သွင်းပေးပါ`);
-          msg += `📌 *${f.label}:* ${val}%0A`;
-        }
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-        window.open(`https://t.me/${TELEGRAM_USERNAME}?text=${msg}`, "_blank");
-      };
+<script>
+const EXCHANGE_RATE = 4390;
+const TELEGRAM_USERNAME = "YOUR_USERNAME";
 
-      // Theme Switch
-      document.getElementById("themeToggleBtn").onclick = () => {
-        document.body.classList.toggle("light");
-      };
-    </script>
-  </body>
-  </html>
+const CATALOG = [
+  {
+    id:"mlbb", name:"Mobile Legends: Bang Bang", category:"Mobile Game", badge:"POPULAR",
+    image:"https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=400&fit=crop",
+    hint:"MLBB diamond packs vary by login region. Myanmar Promo is discounted.",
+    fields:[
+      {id:"userId", label:"User ID", placeholder:"e.g. 12345678", type:"text"},
+      {id:"zoneId", label:"Zone ID", placeholder:"e.g. 1234", type:"text"}
+    ],
+    servers:[
+      { name:"🌐 Global", packages:[
+        {name:"86 Diamonds", usd:1.25},{name:"172 Diamonds", usd:2.45},{name:"257 Diamonds", usd:3.65},{name:"344 Diamonds", usd:4.90},{name:"706 Diamonds", usd:9.80},{name:"Weekly Diamond Pass", usd:1.95},{name:"Twilight Pass", usd:8.90}
+      ]},
+      { name:"🇧🇷 Brazil", packages:[
+        {name:"86 Diamonds (BR)", usd:1.15},{name:"172 Diamonds (BR)", usd:2.25},{name:"257 Diamonds (BR)", usd:3.40},{name:"706 Diamonds (BR)", usd:9.20},{name:"Weekly Pass (BR)", usd:1.85}
+      ]},
+      { name:"🇲🇲 Myanmar Promo", packages:[
+        {name:"50 Diamonds (Special)", usd:0.70},{name:"150 Diamonds (Special)", usd:2.05},{name:"300 Diamonds (Special)", usd:3.95},{name:"500 Diamonds (Special)", usd:6.80}
+      ]},
+      { name:"🇮🇩 Indonesia", packages:[
+        {name:"86 Diamonds (ID)", usd:1.18},{name:"172 Diamonds (ID)", usd:2.30},{name:"257 Diamonds (ID)", usd:3.48},{name:"Weekly Pass (ID)", usd:1.88},{name:"Starlight Member", usd:7.50}
+      ]},
+      { name:"🇵🇭 Philippines", packages:[
+        {name:"86 Diamonds (PH)", usd:1.22},{name:"172 Diamonds (PH)", usd:2.40},{name:"344 Diamonds (PH)", usd:4.75},{name:"Weekly Pass (PH)", usd:1.90}
+      ]}
+    ]
+  },
+  {
+    id:"pubg", name:"PUBG Mobile", category:"Mobile Game", badge:"HOT",
+    image:"https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&h=400&fit=crop",
+    fields:[{id:"playerId", label:"Player ID", placeholder:"e.g. 512345678", type:"text"}],
+    servers:[{ name:"Global", packages:[
+      {name:"60 UC", usd:0.95},{name:"325 UC", usd:4.80},{name:"660 UC", usd:9.50},{name:"1800 UC", usd:24.50},{name:"Royale Pass", usd:9.90}
+    ]}]
+  },
+  {
+    id:"freefire", name:"Free Fire", category:"Mobile Game", badge:null,
+    image:"https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=400&h=400&fit=crop",
+    fields:[{id:"playerId", label:"Player ID", placeholder:"e.g. 10293847", type:"text"}],
+    servers:[{ name:"Global", packages:[
+      {name:"100 Diamonds", usd:0.90},{name:"310 Diamonds", usd:2.70},{name:"520 Diamonds", usd:4.50},{name:"1060 Diamonds", usd:8.90},{name:"Weekly Membership", usd:2.10}
+    ]}]
+  },
+  {
+    id:"genshin", name:"Genshin Impact", category:"RPG", badge:"NEW",
+    image:"https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400&h=400&fit=crop",
+    fields:[{id:"uid", label:"UID", placeholder:"e.g. 700123456", type:"text"}],
+    servers:[{ name:"Global", packages:[
+      {name:"300 Genesis Crystal", usd:4.99},{name:"980 Genesis Crystal", usd:14.99},{name:"1980 Genesis Crystal", usd:29.99},{name:"Blessing of the Welkin Moon", usd:4.99},{name:"6480 Genesis Crystal", usd:99.99}
+    ]}]
+  },
+  {
+    id:"steam", name:"Steam Wallet", category:"Gift Card", badge:null,
+    image:"https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=400&h=400&fit=crop",
+    fields:[{id:"email", label:"Delivery Email", placeholder:"For voucher delivery — e.g. you@mail.com", type:"email"}],
+    servers:[{ name:"Global USD", packages:[
+      {name:"$5 Steam Code", usd:5.10},{name:"$10 Steam Code", usd:10.20},{name:"$20 Steam Code", usd:20.30},{name:"$50 Steam Code", usd:50.80}
+    ]}]
+  },
+  {
+    id:"roblox", name:"Roblox", category:"Gift Card", badge:"HOT",
+    image:"https://images.unsplash.com/photo-1580234811497-9df7fd2f357e?w=400&h=400&fit=crop",
+    fields:[{id:"email", label:"Delivery Email", placeholder:"Robux / Gift card delivery email", type:"email"}],
+    servers:[{ name:"Global", packages:[
+      {name:"400 Robux", usd:4.99},{name:"800 Robux", usd:9.99},{name:"1700 Robux", usd:19.99},{name:"$10 Gift Card", usd:10.00},{name:"$25 Gift Card", usd:25.00}
+    ]}]
+  }
+];
+
+let activeGame=null, activeServer=null, activePack=null;
+let textFilter="", categoryFilter="all";
+
+const grid=document.getElementById('grid');
+const search=document.getElementById('search');
+const countEl=document.getElementById('count');
+const dlg=document.getElementById('dlg');
+const dlgTitle=document.getElementById('dlgTitle');
+const dlgSub=document.getElementById('dlgSub');
+const dlgImg=document.getElementById('dlgImg');
+const serverBlock=document.getElementById('serverBlock');
+const serversEl=document.getElementById('servers');
+const serverHint=document.getElementById('serverHint');
+const formEl=document.getElementById('form');
+const packsEl=document.getElementById('packs');
+const sumName=document.getElementById('sumName');
+const sumUsd=document.getElementById('sumUsd');
+const sumMmk=document.getElementById('sumMmk');
+const cta=document.getElementById('cta');
+const toastEl=document.getElementById('toast');
+
+function mmk(usd){ return Math.round(usd * EXCHANGE_RATE); }
+function fmt(n){ return n.toLocaleString('en-US'); }
+
+function filtered(){
+  return CATALOG.filter(g=>{
+    const byCat = categoryFilter==="all" || g.category===categoryFilter;
+    const q=textFilter.trim().toLowerCase();
+    const byText = !q || g.name.toLowerCase().includes(q) || g.category.toLowerCase().includes(q) || g.id.includes(q);
+    return byCat && byText;
+  });
+}
+
+function renderGrid(){
+  const list=filtered();
+  countEl.textContent = list.length + " / " + CATALOG.length;
+  if(!list.length){
+    grid.innerHTML='<div class="empty">No results for “'+escapeHtml(textFilter)+'”. Try another keyword.</div>';
+    return;
+  }
+  grid.innerHTML = list.map(g=>`
+    <article class="card" onclick="openGame('${g.id}')" role="button" tabindex="0" onkeydown="if(event.key==='Enter')openGame('${g.id}')">
+      ${g.badge?`<span class="badge ${g.badge==='POPULAR'?'promo':''}">${g.badge}</span>`:''}
+      <div class="thumb">
+        <img src="${g.image}" alt="${escapeHtml(g.name)}" loading="lazy" onerror="this.style.background='#1a2a4a'">
+        <div class="thumb-meta"><i>${escapeHtml(g.category)}</i><i>${g.servers.length>1? g.servers.length+' servers':'Instant'}</i></div>
+      </div>
+      <strong class="card-title">${escapeHtml(g.name)}</strong>
+      <span class="card-sub"><span class="dot"></span> ${g.servers.length>1?'Grouped servers':'Single region'} · from ${fmt(mmk(g.servers[0].packages[0].usd))} MMK</span>
+    </article>
+  `).join('');
+}
+
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+
+window.openGame = function(id){
+  activeGame = CATALOG.find(g=>g.id===id);
+  activeServer = activeGame.servers[0];
+  activePack = null;
+  dlgTitle.textContent = activeGame.name;
+  dlgSub.textContent = activeGame.category + (activeGame.servers.length>1 ? " · "+activeGame.servers.length+" regions" : "");
+  dlgImg.src = activeGame.image;
+  dlgImg.alt = activeGame.name;
+
+  // servers
+  if(activeGame.servers.length>1){
+    serverBlock.style.display="block";
+    serverHint.textContent = activeGame.hint || "";
+    serversEl.innerHTML = activeGame.servers.map((s,i)=>`
+      <button type="button" class="srv ${i===0?'active':''}" onclick="switchServer(${i},this)">${escapeHtml(s.name)}</button>
+    `).join('');
+  } else {
+    serverBlock.style.display="none";
+    serversEl.innerHTML="";
+  }
+
+  // form
+  formEl.className = "form-grid" + (activeGame.fields.length>1 ? " cols2" : "");
+  formEl.innerHTML = activeGame.fields.map(f=>`
+    <div class="field">
+      <label for="field_${f.id}">${escapeHtml(f.label)}</label>
+      <input id="field_${f.id}" type="${f.type||'text'}" placeholder="${escapeHtml(f.placeholder)}" autocomplete="off">
+    </div>
+  `).join('');
+
+  renderPacks();
+  updateSummary();
+  dlg.showModal();
+};
+
+window.switchServer = function(idx, btn){
+  [...serversEl.children].forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  activeServer = activeGame.servers[idx];
+  activePack = null;
+  renderPacks();
+  updateSummary();
+};
+
+function renderPacks(){
+  packsEl.innerHTML = activeServer.packages.map((p,i)=>{
+    const v = mmk(p.usd);
+    return `
+      <button type="button" class="pack" onclick="pickPack(${i},this)">
+        <span class="pack-check">✓</span>
+        <div class="pack-name">${escapeHtml(p.name)}</div>
+        <div class="pack-usd">$${p.usd.toFixed(2)} · 1 USD = ${fmt(EXCHANGE_RATE)} MMK</div>
+        <b class="pack-mmk">${fmt(v)} MMK</b>
+      </button>
+    `;
+  }).join('');
+}
+
+window.pickPack = function(idx, el){
+  [...packsEl.children].forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  activePack = activeServer.packages[idx];
+  updateSummary();
+};
+
+function updateSummary(){
+  if(!activePack){
+    sumName.textContent = "— choose a pack —";
+    sumUsd.textContent = activeServer ? activeServer.name + " · " + activeServer.packages.length + " plans" : "";
+    sumMmk.textContent = "— MMK";
+    cta.disabled=false;
+    return;
+  }
+  sumName.textContent = activePack.name;
+  sumUsd.textContent = "$" + activePack.usd.toFixed(2) + " × " + fmt(EXCHANGE_RATE) + " =";
+  sumMmk.textContent = fmt(mmk(activePack.usd)) + " MMK";
+}
+
+function showToast(msg){
+  toastEl.textContent=msg;
+  toastEl.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t=setTimeout(()=>toastEl.classList.remove('show'),2200);
+}
+
+// search + filter
+let t;
+search.addEventListener('input', e=>{
+  clearTimeout(t);
+  t=setTimeout(()=>{ textFilter=e.target.value; renderGrid(); }, 90);
+});
+document.getElementById('filterPills').addEventListener('click', e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  b.classList.add('active');
+  categoryFilter=b.dataset.filter;
+  renderGrid();
+});
+
+// telegram
+cta.addEventListener('click', ()=>{
+  if(!activePack){ showToast("Please select a package first"); return; }
+  // validate fields
+  let lines=[];
+  for(const f of activeGame.fields){
+    const inp=document.getElementById('field_'+f.id);
+    const v=(inp.value||"").trim();
+    if(!v){
+      inp.focus();
+      inp.style.borderColor="#ff5a8a";
+      setTimeout(()=>inp.style.borderColor="",1200);
+      showToast(f.label + " is required");
+      return;
+    }
+    if(f.type==="email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){
+      inp.focus(); showToast("Enter a valid email"); return;
+    }
+    lines.push({label:f.label, value:v});
+  }
+  const price = fmt(mmk(activePack.usd));
+  const header = "🎮 New Order — Gamepay Hub";
+  const body =
+`${header}
+━━━━━━━━━━━━━━━
+🕹 Game: ${activeGame.name}
+🌐 Server: ${activeServer.name}
+💎 Package: ${activePack.name}
+💰 Price: ${price} MMK ($${activePack.usd.toFixed(2)} × ${EXCHANGE_RATE})
+━━━━━━━━━━━━━━━
+${lines.map(l=>`📌 ${l.label}: ${l.value}`).join("\n")}
+━━━━━━━━━━━━━━━
+Sent via Gamepay Hub — please confirm availability.`;
+
+  const url = `https://t.me/${TELEGRAM_USERNAME}?text=${encodeURIComponent(body)}`;
+  window.open(url, "_blank", "noopener");
+});
+
+// theme
+const themeBtn=document.getElementById('themeBtn');
+function applyTheme(t){
+  document.body.classList.toggle('light', t==="light");
+  themeBtn.textContent = t==="light" ? "🌙 Dark" : "☀️ Light";
+  localStorage.setItem('gph-theme', t);
+}
+const saved=localStorage.getItem('gph-theme');
+const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+applyTheme(saved || (prefersLight ? "light" : "dark"));
+themeBtn.addEventListener('click', ()=>{
+  applyTheme(document.body.classList.contains('light') ? "dark" : "light");
+});
+dlg.addEventListener('click', e=>{
+  const r=dlg.getBoundingClientRect();
+  if(e.clientX<r.left || e.clientX>r.right || e.clientY<r.top || e.clientY>r.bottom) dlg.close();
+});
+
+renderGrid();
+</script>
+</body>
+</html>
