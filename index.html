@@ -161,7 +161,7 @@
     margin:6px 0 16px;
   }
   .search-wrap{position:relative;flex:1;min-width:240px;max-width:440px}
-  .search-wrap s{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-style:normal;opacity:.5;pointer-events:none}
+  .search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-style:normal;opacity:.5;pointer-events:none}
   .search{
     width:100%;padding:13px 14px 13px 38px;border-radius:16px;
     border:1px solid var(--line);background:var(--glass-card);
@@ -398,7 +398,7 @@
 <main class="wrap" id="catalog">
   <div class="toolbar">
     <label class="search-wrap" aria-label="Search games">
-      <s>⌕</s>
+      <span class="search-icon" aria-hidden="true">⌕</span>
       <input id="search" class="search" type="search" placeholder="Search games, gift cards, regions…" autocomplete="off" spellcheck="false">
     </label>
     <div class="toolbar-right">
@@ -422,7 +422,7 @@
   <div class="dlg-head">
     <img id="dlgImg" class="dlg-thumb" alt="">
     <div class="dlg-title"><h3 id="dlgTitle">Game</h3><p id="dlgSub">Category</p></div>
-    <button class="close" type="button" onclick="dlg.close()" aria-label="Close">×</button>
+    <button class="close" id="dlgClose" type="button" aria-label="Close">×</button>
   </div>
   <div class="dlg-body">
     <div id="serverBlock" style="display:none">
@@ -552,23 +552,24 @@ function filtered(){
   return CATALOG.filter(g=>{
     const byCat = categoryFilter==="all" || g.category===categoryFilter;
     const q=textFilter.trim().toLowerCase();
-    const byText = !q || g.name.toLowerCase().includes(q) || g.category.toLowerCase().includes(q) || g.id.includes(q);
+    const byText = !q || g.name.toLowerCase().includes(q) || g.category.toLowerCase().includes(q) || g.id.toLowerCase().includes(q);
     return byCat && byText;
   });
 }
 function renderGrid(){
   const list=filtered();
-  countEl.textContent = list.length + " / " + CATALOG.length;
-  heroCount.textContent = CATALOG.length + " games";
+  if(countEl) countEl.textContent = list.length + " / " + CATALOG.length;
+  if(heroCount) heroCount.textContent = CATALOG.length + " games";
+  if(!grid) return;
   if(!list.length){
     grid.innerHTML='<div class="empty">No results for “'+escapeHtml(textFilter)+'”. Try another keyword.</div>';
     return;
   }
   grid.innerHTML = list.map((g,i)=>`
     <article class="card" onclick="openGame('${g.id}')" role="button" tabindex="0" aria-label="${escapeHtml(g.name)}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openGame('${g.id}')}" style="animation-delay:${i*36}ms">
-      ${g.badge?`<span class="badge ${g.badge==='POPULAR'?'promo':''}">${g.badge}</span>`:''}
+      ${g.badge?`<span class="badge ${g.badge==='POPULAR'?'promo':''}">${escapeHtml(g.badge)}</span>`:''}
       <div class="thumb">
-        <img src="${g.image}" alt="${escapeHtml(g.name)}" loading="lazy" onerror="this.style.background='#1a2a4a'">
+        <img src="${g.image}" alt="${escapeHtml(g.name)}" loading="lazy" onerror="this.style.background='#1a2a4a'; this.style.opacity='.85'">
         <div class="thumb-grad"><span>${escapeHtml(g.category)}</span><span>${g.servers.length>1? g.servers.length+' servers':'Instant'}</span></div>
       </div>
       <strong class="card-title">${escapeHtml(g.name)}</strong>
@@ -578,7 +579,9 @@ function renderGrid(){
 }
 
 window.openGame = function(id){
-  activeGame = CATALOG.find(g=>g.id===id);
+  const game = CATALOG.find(g=>g.id===id);
+  if(!game){ showToast("Game not found"); return; }
+  activeGame = game;
   activeServer = activeGame.servers[0];
   activePack = null;
   dlgTitle.textContent = activeGame.name;
@@ -605,11 +608,16 @@ window.openGame = function(id){
   `).join('');
   renderPacks();
   updateSummary();
-  dlg.showModal();
+  if(typeof dlg.showModal === 'function'){
+    if(!dlg.open) dlg.showModal();
+  } else {
+    dlg.setAttribute('open','');
+  }
   // focus first field next frame for spring timing
   requestAnimationFrame(()=>{ const first=formEl.querySelector('input'); if(first) first.focus(); });
 };
 window.switchServer = function(idx, btn){
+  if(!activeGame || !activeGame.servers[idx]) return;
   [...serversEl.children].forEach(b=>{ b.classList.remove('active'); b.setAttribute('aria-pressed','false'); });
   btn.classList.add('active'); btn.setAttribute('aria-pressed','true');
   activeServer = activeGame.servers[idx];
@@ -617,7 +625,9 @@ window.switchServer = function(idx, btn){
   renderPacks();
   updateSummary();
   // subtle pop on packs
-  packsEl.animate([{transform:'translateY(4px)',opacity:.92},{transform:'none',opacity:1}],{duration:220,easing:'cubic-bezier(.22,1,.36,1)'});
+  if(typeof packsEl.animate === 'function'){
+    packsEl.animate([{transform:'translateY(4px)',opacity:.92},{transform:'none',opacity:1}],{duration:220,easing:'cubic-bezier(.22,1,.36,1)'});
+  }
 };
 function renderPacks(){
   packsEl.innerHTML = activeServer.packages.map((p,i)=>{
@@ -633,11 +643,14 @@ function renderPacks(){
   }).join('');
 }
 window.pickPack = function(idx, el){
+  if(!activeServer || !activeServer.packages[idx]) return;
   [...packsEl.children].forEach(c=>{ c.classList.remove('active'); c.setAttribute('aria-pressed','false'); });
   el.classList.add('active'); el.setAttribute('aria-pressed','true');
   activePack = activeServer.packages[idx];
   updateSummary();
-  el.animate([{transform:'scale(.98)'},{transform:'scale(1)'}],{duration:180,easing:'cubic-bezier(.34,1.56,.64,1)'});
+  if(typeof el.animate === 'function'){
+    el.animate([{transform:'scale(.98)'},{transform:'scale(1)'}],{duration:180,easing:'cubic-bezier(.34,1.56,.64,1)'});
+  }
 };
 function updateSummary(){
   if(!activePack){
@@ -650,9 +663,12 @@ function updateSummary(){
   sumName.textContent = activePack.name;
   sumUsd.textContent = "$" + activePack.usd.toFixed(2) + " × " + fmt(EXCHANGE_RATE) + " =";
   sumMmk.textContent = fmt(mmk(activePack.usd)) + " MMK";
-  sumMmk.animate([{transform:'scale(.96)'},{transform:'scale(1)'}],{duration:180,easing:'ease-out'});
+  if(typeof sumMmk.animate === 'function'){
+    sumMmk.animate([{transform:'scale(.96)'},{transform:'scale(1)'}],{duration:180,easing:'ease-out'});
+  }
 }
 function showToast(msg){
+  if(!toastEl) return;
   toastEl.textContent=msg;
   toastEl.classList.add('show');
   clearTimeout(showToast._t);
@@ -660,17 +676,23 @@ function showToast(msg){
 }
 /* search + filter */
 let t;
-search.addEventListener('input', e=>{
-  clearTimeout(t);
-  t=setTimeout(()=>{ textFilter=e.target.value; renderGrid(); }, 80);
-});
-document.getElementById('filterPills').addEventListener('click', e=>{
-  const b=e.target.closest('.chip'); if(!b) return;
-  document.querySelectorAll('.chip').forEach(c=>{ c.classList.remove('active'); c.setAttribute('aria-selected','false'); });
-  b.classList.add('active'); b.setAttribute('aria-selected','true');
-  categoryFilter=b.dataset.filter;
-  renderGrid();
-});
+if(search){
+  search.addEventListener('input', e=>{
+    const v = e.target.value;
+    clearTimeout(t);
+    t=setTimeout(()=>{ textFilter=v; renderGrid(); }, 80);
+  });
+}
+const filterPillsEl = document.getElementById('filterPills');
+if(filterPillsEl){
+  filterPillsEl.addEventListener('click', e=>{
+    const b=e.target.closest('.chip'); if(!b) return;
+    filterPillsEl.querySelectorAll('.chip').forEach(c=>{ c.classList.remove('active'); c.setAttribute('aria-selected','false'); });
+    b.classList.add('active'); b.setAttribute('aria-selected','true');
+    categoryFilter=b.dataset.filter;
+    renderGrid();
+  });
+}
 /* telegram checkout */
 cta.addEventListener('click', ()=>{
   if(!activePack){ showToast("Please select a package"); packsEl.scrollIntoView({behavior:'smooth',block:'nearest'}); return; }
@@ -703,38 +725,60 @@ ${lines.map(l=>`📌 ${l.label}: ${l.value}`).join("\n")}
 ━━━━━━━━━━━━━━━
 Sent via Gamepay Hub — please confirm availability.`;
   const url = `https://t.me/${TELEGRAM_USERNAME}?text=${encodeURIComponent(body)}`;
-  window.open(url, "_blank", "noopener");
+  const w = window.open(url, "_blank", "noopener,noreferrer");
+  if(!w) location.href = url;
   showToast("Opening Telegram…");
 });
 /* theme */
 const themeBtn=document.getElementById('themeBtn');
+function safeGet(key){ try{ return localStorage.getItem(key); }catch(_e){ return null; } }
+function safeSet(key,v){ try{ localStorage.setItem(key,v); }catch(_e){} }
 function applyTheme(t){
   document.body.classList.toggle('light', t==="light");
   document.documentElement.style.colorScheme = t;
-  themeBtn.textContent = t==="light" ? "🌙 Dark" : "☀️ Light";
-  localStorage.setItem('gph-theme', t);
-  document.querySelector('meta[name="theme-color"]').setAttribute('content', t==="light" ? "#f5f6ff" : "#070d1e");
+  if(themeBtn) themeBtn.textContent = t==="light" ? "🌙 Dark" : "☀️ Light";
+  safeSet('gph-theme', t);
+  const mc=document.querySelector('meta[name="theme-color"]');
+  if(mc) mc.setAttribute('content', t==="light" ? "#f5f6ff" : "#070d1e");
 }
-const saved=localStorage.getItem('gph-theme');
+const saved=safeGet('gph-theme');
 const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
 applyTheme(saved || (prefersLight ? "light" : "dark"));
-themeBtn.addEventListener('click', ()=> applyTheme(document.body.classList.contains('light') ? "dark" : "light"));
+if(themeBtn) themeBtn.addEventListener('click', ()=> applyTheme(document.body.classList.contains('light') ? "dark" : "light"));
 /* modal backdrop click + esc already handled; add explicit */
-dlg.addEventListener('click', e=>{
-  const r=dlg.getBoundingClientRect();
-  if(e.clientX<r.left || e.clientX>r.right || e.clientY<r.top || e.clientY>r.bottom) dlg.close();
-});
+if(dlg){
+  const dlgCloseBtn = document.getElementById('dlgClose');
+  if(dlgCloseBtn) dlgCloseBtn.addEventListener('click', ()=>{
+    if(typeof dlg.close === 'function' && dlg.open) dlg.close();
+    else dlg.removeAttribute('open');
+  });
+  dlg.addEventListener('click', e=>{
+    const r=dlg.getBoundingClientRect();
+    if(e.clientX<r.left || e.clientX>r.right || e.clientY<r.top || e.clientY>r.bottom){
+      if(typeof dlg.close === 'function' && dlg.open) dlg.close();
+      else dlg.removeAttribute('open');
+    }
+  });
+  dlg.addEventListener('close', ()=>{
+    // return focus to last focused card for a11y
+    activePack = null;
+  });
+}
 /* nav scroll state + cursor glow */
 const nav=document.getElementById('nav');
-addEventListener('scroll', ()=>{
-  nav.classList.toggle('scrolled', scrollY > 10);
-},{passive:true});
-grid.addEventListener('mousemove', e=>{
-  const card=e.target.closest('.card'); if(!card) return;
-  const r=card.getBoundingClientRect();
-  card.style.setProperty('--mx', ((e.clientX - r.left)/r.width*100).toFixed(1)+'%');
-  card.style.setProperty('--my', ((e.clientY - r.top)/r.height*100).toFixed(1)+'%');
-},{passive:true});
+if(nav){
+  addEventListener('scroll', ()=>{
+    nav.classList.toggle('scrolled', window.scrollY > 10);
+  },{passive:true});
+}
+if(grid){
+  grid.addEventListener('mousemove', e=>{
+    const card=e.target.closest('.card'); if(!card) return;
+    const r=card.getBoundingClientRect();
+    card.style.setProperty('--mx', ((e.clientX - r.left)/r.width*100).toFixed(1)+'%');
+    card.style.setProperty('--my', ((e.clientY - r.top)/r.height*100).toFixed(1)+'%');
+  },{passive:true});
+}
 
 renderGrid();
 </script>
