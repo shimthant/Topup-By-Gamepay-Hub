@@ -1,4 +1,4 @@
-
+;
 
 
 
@@ -7,7 +7,6 @@
 const UPSTREAM_URL = process.env.CATALOGUE_PROVIDER_URL;
 const UPSTREAM_KEY = process.env.CATALOGUE_PROVIDER_KEY;
 
-// အပြင်ဖိုင်မလိုတော့ဘဲ CORS ကို ဒီထဲမှာပဲ တိုက်ရိုက်ထည့်ထားပါသည်
 function setCorsHeaders(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
@@ -36,22 +35,41 @@ async function fetchProviderCatalogue() {
   return upstreamRes.json();
 }
 
+// G2Bulk ၏ ပုံစံမကျသော Data များကို ဂိမ်းအလိုက် အလိုအလျောက် ပြန်ခွဲထုတ်ပေးမည့် နေရာ
 function transformCatalogue(providerData, exchangeRate) {
-  const items = providerData.data || providerData.products || providerData.items || providerData.games || [];
-  return {
-    games: items.map((item) => {
-      const pkgs = item.packages || item.plans || item.services || item.items || item.products || [];
-      return {
-        code: item.code || item.game_code || item.id || item.slug,
-        packages: pkgs.map((pkg) => {
-          const rawPrice = pkg.price_usd ?? pkg.price ?? pkg.usd ?? pkg.cost ?? pkg.api_price ?? 0;
-          return {
-            name: pkg.name || pkg.title || pkg.service_name,
-            priceMmk: usdToMmk(rawPrice, exchangeRate),
-          };
-        }),
+  let rawItems = providerData.data || providerData.products || providerData || [];
+  if (!Array.isArray(rawItems)) rawItems = Object.values(rawItems);
+
+  const gamesMap = {};
+
+  rawItems.forEach(item => {
+    // ဂိမ်း ID ကို ရှာဖွေခြင်း
+    const gameCode = (item.category_id || item.game_id || item.service_id || item.category || "unknown").toString();
+
+    if (!gamesMap[gameCode]) {
+      gamesMap[gameCode] = {
+        code: gameCode,
+        packages: []
       };
-    }),
+    }
+
+    // ဈေးနှုန်းကို ရှာဖွေခြင်း
+    const rawPrice = item.price || item.price_usd || item.unit_price || item.cost || 0;
+
+    // အမည်ကို ရှာဖွေခြင်း
+    const name = item.name || item.title || item.product_name || `Package ${item.id || ""}`;
+
+    // သက်ဆိုင်ရာ ဂိမ်းအောက်သို့ ထည့်သွင်းခြင်း
+    if (rawPrice > 0) {
+      gamesMap[gameCode].packages.push({
+        name: name,
+        priceMmk: usdToMmk(rawPrice, exchangeRate)
+      });
+    }
+  });
+
+  return {
+    games: Object.values(gamesMap)
   };
 }
 
@@ -83,5 +101,4 @@ module.exports = async function handler(req, res) {
     return res.status(502).json({ error: "UpstreamError", message: "Could not fetch the live catalogue right now." });
   }
 };
-
 
