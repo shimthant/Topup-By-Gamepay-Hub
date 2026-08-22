@@ -4,7 +4,7 @@
   "private": true,
   "description": "Vercel serverless API backend for GamePay Hub — live catalogue feed and MLBB region-checker.",
   "engines": {
-    "node": "20.x"
+    "node": "22.x"
   },
   "scripts": {
     "dev": "vercel dev"
