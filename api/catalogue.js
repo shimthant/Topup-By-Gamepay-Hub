@@ -1,9 +1,18 @@
 
 
-const { handlePreflight } = require("./_lib/cors");
+
+
+
 
 const UPSTREAM_URL = process.env.CATALOGUE_PROVIDER_URL;
 const UPSTREAM_KEY = process.env.CATALOGUE_PROVIDER_KEY;
+
+// အပြင်ဖိုင်မလိုတော့ဘဲ CORS ကို ဒီထဲမှာပဲ တိုက်ရိုက်ထည့်ထားပါသည်
+function setCorsHeaders(res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-API-Key, Authorization");
+}
 
 function getExchangeRate() {
   const raw = Number(process.env.EXCHANGE_RATE);
@@ -17,7 +26,6 @@ function usdToMmk(usdPrice, exchangeRate) {
 async function fetchProviderCatalogue() {
   const upstreamRes = await fetch(UPSTREAM_URL, {
     headers: {
-      // G2Bulk ၏ သတ်မှတ်ချက်အရ X-API-Key ကို အသုံးပြုထားပါသည်
       "X-API-Key": UPSTREAM_KEY || "",
       "Accept": "application/json",
     },
@@ -48,29 +56,31 @@ function transformCatalogue(providerData, exchangeRate) {
 }
 
 module.exports = async function handler(req, res) {
-  if (handlePreflight(req, res)) return;
+  setCorsHeaders(res);
+  
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
 
   if (req.method !== "GET") {
-    res.status(405).json({ error: "MethodNotAllowed", message: "Use GET." });
-    return;
+    return res.status(405).json({ error: "MethodNotAllowed", message: "Use GET." });
   }
 
   if (!UPSTREAM_URL) {
-    res.status(503).json({
+    return res.status(503).json({
       error: "NotConfigured",
       message: "CATALOGUE_PROVIDER_URL is missing in Vercel.",
     });
-    return;
   }
 
   try {
     const exchangeRate = getExchangeRate();
     const providerData = await fetchProviderCatalogue();
     const catalogue = transformCatalogue(providerData, exchangeRate);
-    res.status(200).json(catalogue);
+    return res.status(200).json(catalogue);
   } catch (e) {
     console.error("catalogue upstream call failed:", e);
-    res.status(502).json({ error: "UpstreamError", message: "Could not fetch the live catalogue right now." });
+    return res.status(502).json({ error: "UpstreamError", message: "Could not fetch the live catalogue right now." });
   }
 };
 
