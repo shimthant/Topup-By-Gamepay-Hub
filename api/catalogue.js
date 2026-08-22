@@ -1,8 +1,5 @@
 
 
-
-
-
 const { handlePreflight } = require("./_lib/cors");
 
 const UPSTREAM_URL = process.env.CATALOGUE_PROVIDER_URL;
@@ -20,8 +17,9 @@ function usdToMmk(usdPrice, exchangeRate) {
 async function fetchProviderCatalogue() {
   const upstreamRes = await fetch(UPSTREAM_URL, {
     headers: {
-      Authorization: `Bearer ${UPSTREAM_KEY}`,
-      Accept: "application/json",
+      // G2Bulk ၏ သတ်မှတ်ချက်အရ X-API-Key ကို အသုံးပြုထားပါသည်
+      "X-API-Key": UPSTREAM_KEY || "",
+      "Accept": "application/json",
     },
   });
   if (!upstreamRes.ok) {
@@ -31,18 +29,13 @@ async function fetchProviderCatalogue() {
 }
 
 function transformCatalogue(providerData, exchangeRate) {
-  // G2Bulk ၏ Data ပုံစံကို ဖမ်းယူရန် ပြင်ဆင်ထားပါသည်
   const items = providerData.data || providerData.products || providerData.items || providerData.games || [];
-  
   return {
     games: items.map((item) => {
-      // Package များအတွက်
-      const pkgs = item.packages || item.plans || item.services || item.items || [];
-      
+      const pkgs = item.packages || item.plans || item.services || item.items || item.products || [];
       return {
         code: item.code || item.game_code || item.id || item.slug,
         packages: pkgs.map((pkg) => {
-          // ဈေးနှုန်းရှာရန်
           const rawPrice = pkg.price_usd ?? pkg.price ?? pkg.usd ?? pkg.cost ?? pkg.api_price ?? 0;
           return {
             name: pkg.name || pkg.title || pkg.service_name,
@@ -62,10 +55,10 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  if (!UPSTREAM_URL || !UPSTREAM_KEY) {
+  if (!UPSTREAM_URL) {
     res.status(503).json({
       error: "NotConfigured",
-      message: "The catalogue provider isn't connected yet — set CATALOGUE_PROVIDER_URL and CATALOGUE_PROVIDER_KEY in Vercel.",
+      message: "CATALOGUE_PROVIDER_URL is missing in Vercel.",
     });
     return;
   }
