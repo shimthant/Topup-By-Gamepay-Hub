@@ -1,34 +1,40 @@
-// GET /api/region-checker?player_id=...&server_id=...
+// GET /api/region-checker?player_id=...&server_id=...   (or ?id=...&server=...)
 //
-// A secure proxy in front of your real MLBB region-check provider. Your
-// provider's secret key lives only here, in a Vercel environment variable
-// â€” it is never sent to, or visible from, the browser.
+// A secure proxy in front of https://yanjiestore.com/submitt.php â€” your
+// MLBB player-lookup provider. The frontend never talks to that URL
+// directly; it only ever calls this endpoint.
 //
-// ===== Set these in Vercel -> Settings -> Environment Variables =====
-//   MLBB_PROVIDER_URL   the real endpoint your provider gave you
-//   MLBB_PROVIDER_KEY   the secret API key/token they gave you
+// ===== What I could verify, and what I couldn't =====
+// The upstream request format was given to me exactly (?ID={id}&server={server})
+// and is built precisely below â€” that part is not a guess.
 //
-// ===== I don't have your provider's actual API docs =====
-// I don't know their exact parameter names, auth header style, or response
-// field names â€” guessing those would just trade one kind of broken
-// integration for another. The three spots below marked "ADJUST THIS" are
-// the only things that need to change once you have their documentation
-// open next to you; everything around them (your frontend's expected
-// response shape, CORS, rate limiting, input validation, error handling)
-// is already complete.
+// The upstream RESPONSE shape is a different story: I tried to call this
+// URL myself to see a real response, but yanjiestore.com is blocked by
+// this environment's network policy (a "connect_rejected" from the egress
+// proxy â€” not a timeout or a fluke, so retrying wouldn't have helped).
+// I have not seen a real response from this API. extractPlayerInfo() below
+// checks several plausible field-name variants (username/name/nickname,
+// region/server_region/zone) so it has the best chance of working, but you
+// should open this URL yourself once (in a browser, with a real
+// player_id and server_id) and confirm the actual field names match â€” the
+// one block marked "ADJUST THIS" is exactly where to fix it if not.
+//
+// ===== Optional: an API key, if this provider ever requires one =====
+// Nothing you've described so far suggests this endpoint needs auth (the
+// URL format you gave has no token/key parameter), so none is sent by
+// default. If you find out it does need one, set YANJIE_API_KEY in Vercel
+// and see the commented-out line below for where it would go.
 
 const { handlePreflight } = require("./_lib/cors");
 const { checkRateLimit, RATE_LIMIT_PER_MINUTE } = require("./_lib/rateLimit");
 
-const UPSTREAM_URL = process.env.MLBB_PROVIDER_URL;
-const UPSTREAM_KEY = process.env.MLBB_PROVIDER_KEY;
+const UPSTREAM_BASE_URL = process.env.MLBB_PROVIDER_URL || "https://yanjiestore.com/submitt.php";
+const UPSTREAM_TIMEOUT_MS = 8000;
 
 // Optional: lock this proxy down to callers who send one of these keys.
 // Leave unset while your frontend is a plain static site with no login â€”
 // a public page can't hold a real secret (anyone can view its source), so
-// CORS + rate limiting below are your actual protection in that case. Only
-// set this if you build a client that CAN keep a secret (e.g. a mobile
-// app, or a backend-rendered admin page).
+// CORS + rate limiting below are your actual protection in that case.
 function isAuthorized(req) {
   const configured = process.env.REGION_CHECKER_CLIENT_KEYS;
   if (!configured) return true;
@@ -39,55 +45,76 @@ function isAuthorized(req) {
   return !!supplied && validKeys.includes(supplied);
 }
 
-// ADJUST THIS â€” build the request the way your provider's docs describe.
-// Shown here: query-string params + a Bearer token, the most common
-// pattern for this kind of reseller API.
+// ADJUST THIS if a real response shows different field names than these.
+function extractPlayerInfo(data) {
+  if (!data || typeof data !== "object") return null;
+  const username = data.username || data.name || data.nickname || data.player_name || data.ign;
+  if (!username) return null;
+  return {
+    username: String(username),
+    region: data.region || data.server_region || data.zone || null,
+  };
+}
+
 async function callUpstreamProvider(playerId, serverId) {
-  const url = new URL(UPSTREAM_URL);
-  url.searchParams.set("player_id", playerId);
-  if (serverId) url.searchParams.set("server_id", serverId);
+  const url = new URL(UPSTREAM_BASE_URL);
+  // Exact format requested: ?ID={id}&server={server}
+  url.searchParams.set("ID", playerId);
+  url.searchParams.set("server", serverId);
 
-  const upstreamRes = await fetch(url.toString(), {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${UPSTREAM_KEY}`,
-      Accept: "application/json",
-    },
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
 
-  // ADJUST THIS â€” some providers signal "not found" with an HTTP 404,
-  // others always return 200 with a success:false field. This assumes the
-  // 404 style; if yours uses the other style, check `data.success` (or
-  // whatever field they use) below instead.
+  let upstreamRes;
+  try {
+    upstreamRes = await fetch(url.toString(), {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        // Authorization: `Bearer ${process.env.YANJIE_API_KEY}`, // only if the provider turns out to need one
+      },
+      signal: controller.signal,
+    });
+  } catch (e) {
+    if (e.name === "AbortError") {
+      const timeoutError = new Error("Upstream provider timed out");
+      timeoutError.isTimeout = true;
+      throw timeoutError;
+    }
+    throw e;
+  } finally {
+    clearTimeout(timeout);
+  }
+
   if (upstreamRes.status === 404) return null;
   if (!upstreamRes.ok) {
     throw new Error(`Upstream provider returned HTTP ${upstreamRes.status}`);
   }
 
-  const data = await upstreamRes.json();
+  // Sanitize: don't trust that this PHP endpoint always returns valid
+  // JSON (some return HTML error pages, or JSON with a text/html
+  // Content-Type) â€” parse defensively instead of letting a bad body throw
+  // an unhandled exception.
+  let data;
+  try {
+    data = await upstreamRes.json();
+  } catch (e) {
+    throw new Error("Upstream provider returned a non-JSON response");
+  }
 
-  // ADJUST THIS â€” map your provider's actual response field names into
-  // the shape this proxy returns below. The right-hand sides here are a
-  // best guess at common naming (username/nickname, region/server_region)
-  // â€” open your provider's real response and correct them to match.
-  const username = data.username || data.nickname || data.in_game_name;
-  if (!username) return null;
-  return {
-    username,
-    region: data.region || data.server_region || null,
-  };
+  return extractPlayerInfo(data);
 }
 
 module.exports = async function handler(req, res) {
   if (handlePreflight(req, res)) return;
 
   if (req.method !== "GET") {
-    res.status(405).json({ error: "MethodNotAllowed", message: "Use GET." });
+    res.status(405).json({ success: false, error: "MethodNotAllowed", message: "Use GET." });
     return;
   }
 
   if (!isAuthorized(req)) {
-    res.status(401).json({ error: "Unauthorized", message: "Missing or invalid API credentials." });
+    res.status(401).json({ success: false, error: "Unauthorized", message: "Missing or invalid API credentials." });
     return;
   }
 
@@ -98,55 +125,40 @@ module.exports = async function handler(req, res) {
   res.setHeader("X-RateLimit-Reset", String(Math.floor(rl.reset)));
   if (rl.limited) {
     res.setHeader("Retry-After", "60");
-    res.status(429).json({ error: "RateLimitExceeded", message: "You have exceeded the allowed number of requests. Try again later." });
+    res.status(429).json({ success: false, error: "RateLimitExceeded", message: "You have exceeded the allowed number of requests. Try again later." });
     return;
   }
 
-  const { player_id, server_id } = req.query;
+  // Accept either naming from the frontend: player_id/id, server_id/server.
+  const playerId = req.query.player_id || req.query.id;
+  const serverId = req.query.server_id || req.query.server;
 
-  if (!player_id) {
-    res.status(400).json({ error: "MissingParameter", message: "Provide 'player_id'." });
+  if (!playerId || !serverId) {
+    res.status(400).json({ success: false, error: "MissingParameter", message: "Provide both a player ID and a server ID." });
     return;
   }
-  if (!/^[0-9]{6,12}$/.test(String(player_id))) {
-    res.status(400).json({ error: "MalformedPlayerId", message: "'player_id' must be a numeric string between 6 and 12 digits." });
-    return;
-  }
-
-  if (!UPSTREAM_URL || !UPSTREAM_KEY) {
-    res.status(503).json({
-      error: "NotConfigured",
-      message: "The region-check provider isn't connected yet â€” set MLBB_PROVIDER_URL and MLBB_PROVIDER_KEY in Vercel.",
-    });
+  if (!/^[0-9]{4,12}$/.test(String(playerId)) || !/^[0-9]{1,8}$/.test(String(serverId))) {
+    res.status(400).json({ success: false, error: "MalformedInput", message: "Player ID and server ID must be numeric." });
     return;
   }
 
   try {
-    const result = await callUpstreamProvider(String(player_id), server_id ? String(server_id) : undefined);
+    const result = await callUpstreamProvider(String(playerId), String(serverId));
     if (!result) {
-      res.status(404).json({
-        success: false,
-        error: "InvalidPlayerID",
-        message: "The provided player ID does not exist.",
-      });
+      res.status(404).json({ success: false, error: "InvalidPlayerID", message: "The provided player ID does not exist." });
       return;
     }
-    res.status(200).json({
-      success: true,
-      player_id: String(player_id),
-      username: result.username,
-      region: result.region,
-      status: "success",
-    });
+    res.status(200).json({ success: true, username: result.username, region: result.region });
   } catch (e) {
     // Log the real error for yourself in the Vercel function logs, but
     // never echo internal error details (which could include parts of the
-    // upstream URL or key) back to the browser.
+    // upstream URL or response) back to the browser.
     console.error("region-checker upstream call failed:", e);
-    res.status(502).json({
-      success: false,
-      error: "UpstreamError",
-      message: "Could not verify right now. You can still continue, just double-check your details.",
-    });
+    if (e.isTimeout) {
+      res.status(504).json({ success: false, error: "GatewayTimeout", message: "The region-check provider took too long to respond. Please try again." });
+      return;
+    }
+    res.status(502).json({ success: false, error: "UpstreamError", message: "Could not verify right now. You can still continue, just double-check your details." });
   }
 };
+
