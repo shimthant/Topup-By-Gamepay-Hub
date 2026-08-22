@@ -1,7 +1,3 @@
-;
-
-
-
 
 
 const UPSTREAM_URL = process.env.CATALOGUE_PROVIDER_URL;
@@ -35,7 +31,19 @@ async function fetchProviderCatalogue() {
   return upstreamRes.json();
 }
 
-// G2Bulk ၏ ပုံစံမကျသော Data များကို ဂိမ်းအလိုက် အလိုအလျောက် ပြန်ခွဲထုတ်ပေးမည့် နေရာ
+// G2Bulk မှ နံပါတ်များကို Website မှ နာမည်များသို့ အလိုအလျောက် ချိတ်ဆက်ပေးမည့် ဇယား
+const GAME_CODE_MAP = {
+  "1": "pubg",       // 1 = PUBG Mobile (UC)
+  "3": "itunes",     // 3 = iTunes Gift Card
+  "4": "razer",      // 4 = Razer Gold
+  "5": "psn",        // 5 = PSN USA
+  "6": "mlbb",       // 6 = Mobile Legends (Diamonds)
+  "8": "pubgns",     // 8 = PUBG New State
+  "14": "roblox",    // 14 = Roblox
+  "15": "nintendo",  // 15 = Nintendo eShop
+  "16": "xbox"       // 16 = XBOX Giftcard
+};
+
 function transformCatalogue(providerData, exchangeRate) {
   let rawItems = providerData.data || providerData.products || providerData || [];
   if (!Array.isArray(rawItems)) rawItems = Object.values(rawItems);
@@ -43,8 +51,9 @@ function transformCatalogue(providerData, exchangeRate) {
   const gamesMap = {};
 
   rawItems.forEach(item => {
-    // ဂိမ်း ID ကို ရှာဖွေခြင်း
-    const gameCode = (item.category_id || item.game_id || item.service_id || item.category || "unknown").toString();
+    // G2Bulk မှ နံပါတ်ကိုယူ၍ Website နာမည်သို့ ပြောင်းခြင်း
+    const rawCode = (item.category_id || item.game_id || item.service_id || item.category || "unknown").toString();
+    const gameCode = GAME_CODE_MAP[rawCode] || rawCode; 
 
     if (!gamesMap[gameCode]) {
       gamesMap[gameCode] = {
@@ -53,13 +62,9 @@ function transformCatalogue(providerData, exchangeRate) {
       };
     }
 
-    // ဈေးနှုန်းကို ရှာဖွေခြင်း
     const rawPrice = item.price || item.price_usd || item.unit_price || item.cost || 0;
-
-    // အမည်ကို ရှာဖွေခြင်း
     const name = item.name || item.title || item.product_name || `Package ${item.id || ""}`;
 
-    // သက်ဆိုင်ရာ ဂိမ်းအောက်သို့ ထည့်သွင်းခြင်း
     if (rawPrice > 0) {
       gamesMap[gameCode].packages.push({
         name: name,
@@ -101,4 +106,5 @@ module.exports = async function handler(req, res) {
     return res.status(502).json({ error: "UpstreamError", message: "Could not fetch the live catalogue right now." });
   }
 };
+
 
