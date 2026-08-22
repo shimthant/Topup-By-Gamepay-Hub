@@ -1,5 +1,9 @@
 
 
+
+
+
+
 const UPSTREAM_URL = process.env.CATALOGUE_PROVIDER_URL;
 const UPSTREAM_KEY = process.env.CATALOGUE_PROVIDER_KEY;
 
@@ -31,19 +35,7 @@ async function fetchProviderCatalogue() {
   return upstreamRes.json();
 }
 
-// G2Bulk မှ နံပါတ်များကို Website မှ နာမည်များသို့ အလိုအလျောက် ချိတ်ဆက်ပေးမည့် ဇယား
-const GAME_CODE_MAP = {
-  "1": "pubg",       // 1 = PUBG Mobile (UC)
-  "3": "itunes",     // 3 = iTunes Gift Card
-  "4": "razer",      // 4 = Razer Gold
-  "5": "psn",        // 5 = PSN USA
-  "6": "mlbb",       // 6 = Mobile Legends (Diamonds)
-  "8": "pubgns",     // 8 = PUBG New State
-  "14": "roblox",    // 14 = Roblox
-  "15": "nintendo",  // 15 = Nintendo eShop
-  "16": "xbox"       // 16 = XBOX Giftcard
-};
-
+// နံပါတ်များကို Website ၏ နံပါတ်များအတိုင်း တိုက်ရိုက်ချိတ်ဆက်ပေးမည့် Code
 function transformCatalogue(providerData, exchangeRate) {
   let rawItems = providerData.data || providerData.products || providerData || [];
   if (!Array.isArray(rawItems)) rawItems = Object.values(rawItems);
@@ -51,9 +43,13 @@ function transformCatalogue(providerData, exchangeRate) {
   const gamesMap = {};
 
   rawItems.forEach(item => {
-    // G2Bulk မှ နံပါတ်ကိုယူ၍ Website နာမည်သို့ ပြောင်းခြင်း
-    const rawCode = (item.category_id || item.game_id || item.service_id || item.category || "unknown").toString();
-    const gameCode = GAME_CODE_MAP[rawCode] || rawCode; 
+    // Website ထဲက နံပါတ်တွေနဲ့ ကိုက်ညီအောင် ပြင်ဆင်ခြင်း
+    let gameCode = (item.category_id || item.game_id || item.service_id || item.category || "unknown").toString();
+
+    // MLBB အတွက် ခြွင်းချက် (MLBB က Code 6 ဖြစ်ပေမယ့် Website မှာ mlbb_all_regions လို့ သုံးထားလို့ပါ)
+    if (gameCode === "6") {
+      gameCode = "mlbb_all_regions";
+    }
 
     if (!gamesMap[gameCode]) {
       gamesMap[gameCode] = {
@@ -106,5 +102,4 @@ module.exports = async function handler(req, res) {
     return res.status(502).json({ error: "UpstreamError", message: "Could not fetch the live catalogue right now." });
   }
 };
-
 
