@@ -1,23 +1,25 @@
 
+
+
 // GET /api/region-checker?player_id=...&server_id=...   (or ?id=...&server=...)
 //
-// A secure proxy in front of https://yanjiestore.com/submitt.php â€” your
+// A secure proxy in front of https://yanjiestore.com/submitt.php — your
 // MLBB player-lookup provider. The frontend never talks to that URL
 // directly; it only ever calls this endpoint.
 //
 // ===== What I could verify, and what I couldn't =====
 // The upstream request format was given to me exactly (?ID={id}&server={server})
-// and is built precisely below â€” that part is not a guess.
+// and is built precisely below — that part is not a guess.
 //
 // The upstream RESPONSE shape is a different story: I tried to call this
 // URL myself to see a real response, but yanjiestore.com is blocked by
 // this environment's network policy (a "connect_rejected" from the egress
-// proxy â€” not a timeout or a fluke, so retrying wouldn't have helped).
+// proxy — not a timeout or a fluke, so retrying wouldn't have helped).
 // I have not seen a real response from this API. extractPlayerInfo() below
 // checks several plausible field-name variants (username/name/nickname,
 // region/server_region/zone) so it has the best chance of working, but you
 // should open this URL yourself once (in a browser, with a real
-// player_id and server_id) and confirm the actual field names match â€” the
+// player_id and server_id) and confirm the actual field names match — the
 // one block marked "ADJUST THIS" is exactly where to fix it if not.
 //
 // ===== Optional: an API key, if this provider ever requires one =====
@@ -26,14 +28,14 @@
 // default. If you find out it does need one, set YANJIE_API_KEY in Vercel
 // and see the commented-out line below for where it would go.
 
-const { handlePreflight } = require("./_lib/cors");
-const { checkRateLimit, RATE_LIMIT_PER_MINUTE } = require("./_lib/rateLimit");
+const { handlePreflight } = require("./cors");
+const { checkRateLimit, RATE_LIMIT_PER_MINUTE } = require("./rateLimit");
 
 const UPSTREAM_BASE_URL = process.env.MLBB_PROVIDER_URL || "https://yanjiestore.com/submitt.php";
 const UPSTREAM_TIMEOUT_MS = 8000;
 
 // Optional: lock this proxy down to callers who send one of these keys.
-// Leave unset while your frontend is a plain static site with no login â€”
+// Leave unset while your frontend is a plain static site with no login —
 // a public page can't hold a real secret (anyone can view its source), so
 // CORS + rate limiting below are your actual protection in that case.
 function isAuthorized(req) {
@@ -94,7 +96,7 @@ async function callUpstreamProvider(playerId, serverId) {
 
   // Sanitize: don't trust that this PHP endpoint always returns valid
   // JSON (some return HTML error pages, or JSON with a text/html
-  // Content-Type) â€” parse defensively instead of letting a bad body throw
+  // Content-Type) — parse defensively instead of letting a bad body throw
   // an unhandled exception.
   let data;
   try {
@@ -130,9 +132,10 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  // Accept either naming from the frontend: player_id/id, server_id/server.
-  const playerId = req.query.player_id || req.query.id;
-  const serverId = req.query.server_id || req.query.server;
+  // The frontend (index.html) sends userId/serverId; player_id/id and
+  // server_id/server are also accepted for direct API testing (see README).
+  const playerId = req.query.userId || req.query.player_id || req.query.id;
+  const serverId = req.query.serverId || req.query.server_id || req.query.server;
 
   if (!playerId || !serverId) {
     res.status(400).json({ success: false, error: "MissingParameter", message: "Provide both a player ID and a server ID." });
@@ -162,4 +165,3 @@ module.exports = async function handler(req, res) {
     res.status(502).json({ success: false, error: "UpstreamError", message: "Could not verify right now. You can still continue, just double-check your details." });
   }
 };
-
