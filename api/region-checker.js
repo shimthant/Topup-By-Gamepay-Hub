@@ -1,3 +1,4 @@
+
 // GET /api/region-checker?player_id=...&server_id=...   (or ?id=...&server=...)
 //
 // A secure proxy in front of https://yanjiestore.com/submitt.php â€” your
