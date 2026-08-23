@@ -1,3 +1,5 @@
+
+
 # GamePay Hub backend (Vercel)
 
 Two serverless API endpoints that your static site (`index.html`, hosted
@@ -59,73 +61,15 @@ each file, those sections are a couple of lines each to fix.
 **Option A — Vercel dashboard:**
 1. Push this repo to GitHub.
 2. On vercel.com -> Add New Project -> import this repo.
-3. **Important:** under "Root Directory", select `backend` — otherwise
-   Vercel will try to deploy your whole repo (including `index.html`) as
-   this project.
+3. Leave "Root Directory" as the repo root — `index.html` is served as a
+   static file alongside the `api/` serverless functions, so no subfolder
+   selection is needed.
 4. Add the environment variables above.
 5. Deploy. Vercel gives you a URL like `https://gamepay-hub-backend.vercel.app`.
 
-**Option B — Vercel CLI, from inside this folder:**
+**Option B — Vercel CLI, from the repo root:**
 ```bash
-cd backend
 npm i -g vercel   # once, if you don't have it
 vercel             # follow the prompts; deploys a preview
 vercel --prod      # promotes to your production URL
-```
 
-## Test it locally before deploying
-
-```bash
-cd backend
-vercel dev
-```
-Then, with your env vars in a local `.env` file (Vercel CLI reads these
-automatically with `vercel dev`):
-```bash
-curl "http://localhost:3000/api/catalogue"
-curl "http://localhost:3000/api/region-checker?player_id=123456&server_id=9999"
-```
-
-## After deploying: connect it to your site
-
-Open `index.html`, find these two lines near the top of the `<script>`,
-and replace the placeholder values with your real Vercel URL:
-
-```js
-const VPS_CATALOGUE_URL = "https://api.YOUR-DOMAIN.com/api/catalogue";
-const PLAYER_ID_LOOKUP_API_URL = "PLACEHOLDER_API_URL";
-```
-becomes, for example:
-```js
-const VPS_CATALOGUE_URL = "https://gamepay-hub-backend.vercel.app/api/catalogue";
-const PLAYER_ID_LOOKUP_API_URL = "https://gamepay-hub-backend.vercel.app/api/region-checker";
-```
-
-## About `vercel.json` and CORS
-
-`vercel.json` in this folder also declares an `Access-Control-Allow-Origin`
-header with a placeholder domain (`https://YOUR-GITHUB-USERNAME.github.io`)
-— edit that to your real domain if you'd like, but note that **the
-`ALLOWED_ORIGIN` environment variable above is what actually takes
-effect**: a serverless function's own header always overrides a static one
-from `vercel.json` for the same response, and both API routes set this
-header themselves. Setting `ALLOWED_ORIGIN` in the Vercel dashboard is the
-easier way to change it later — no code edit or redeploy needed.
-
-## Verified before delivery
-
-Since there's no `vercel` CLI in the environment this was built in, I
-wrote a local test harness that calls both handler functions directly
-(mocking the upstream `fetch` calls) and confirmed:
-- Both endpoints return a clean `503` when their env vars aren't set yet
-  (rather than crashing or silently returning fake data).
-- The secret key is correctly attached to the *upstream* request, and
-  never appears anywhere in the response sent back to the browser.
-- A successful lookup, a "not found" result, and an upstream network
-  failure all produce the right status code and shape — and the failure
-  case logs the real error server-side while showing the browser only a
-  generic, safe message.
-- The USD -> MMK conversion is exact ($1.50 at the default 4380 rate ->
-  6570 MMK), respects a custom `EXCHANGE_RATE`, and falls back to 4380 if
-  that variable is ever set to something invalid.
-- CORS preflight (`OPTIONS`) responses still work correctly on both routes.
