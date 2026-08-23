@@ -1,17 +1,11 @@
 
 
 
-
-
+const { handlePreflight } = require("./cors");
+const { checkRateLimit, RATE_LIMIT_PER_MINUTE } = require("./rateLimit");
 
 const UPSTREAM_URL = process.env.CATALOGUE_PROVIDER_URL;
 const UPSTREAM_KEY = process.env.CATALOGUE_PROVIDER_KEY;
-
-function setCorsHeaders(res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-API-Key, Authorization");
-}
 
 function getExchangeRate() {
   const raw = Number(process.env.EXCHANGE_RATE);
@@ -75,14 +69,20 @@ function transformCatalogue(providerData, exchangeRate) {
 }
 
 module.exports = async function handler(req, res) {
-  setCorsHeaders(res);
-  
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
+  if (handlePreflight(req, res)) return;
 
   if (req.method !== "GET") {
     return res.status(405).json({ error: "MethodNotAllowed", message: "Use GET." });
+  }
+
+  const rateLimitKey = req.headers["x-api-key"] || req.headers["authorization"] || req.socket.remoteAddress || "anonymous";
+  const rl = checkRateLimit(rateLimitKey);
+  res.setHeader("X-RateLimit-Limit", String(RATE_LIMIT_PER_MINUTE));
+  res.setHeader("X-RateLimit-Remaining", String(rl.remaining));
+  res.setHeader("X-RateLimit-Reset", String(Math.floor(rl.reset)));
+  if (rl.limited) {
+    res.setHeader("Retry-After", "60");
+    return res.status(429).json({ error: "RateLimitExceeded", message: "You have exceeded the allowed number of requests. Try again later." });
   }
 
   if (!UPSTREAM_URL) {
@@ -102,4 +102,3 @@ module.exports = async function handler(req, res) {
     return res.status(502).json({ error: "UpstreamError", message: "Could not fetch the live catalogue right now." });
   }
 };
-
