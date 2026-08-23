@@ -1,6 +1,5 @@
 
 
-
 const { handlePreflight } = require("./cors");
 const { checkRateLimit, RATE_LIMIT_PER_MINUTE } = require("./rateLimit");
 
@@ -15,6 +14,15 @@ function getExchangeRate() {
 function usdToMmk(usdPrice, exchangeRate) {
   return Math.round(Number(usdPrice) * exchangeRate);
 }
+
+// Maps your provider's numeric category_id to this app's internal game
+// code, for games the frontend needs to find by a stable code (MLBB and
+// any other "regional group" game like Free Fire). Add an entry here once
+// you know the provider's category_id for that game.
+const GAME_CODE_MAP = {
+  "6": "mlbb_all_regions",
+  // "REPLACE_WITH_FREE_FIRE_CATEGORY_ID": "freefire_all_regions",
+};
 
 async function fetchProviderCatalogue() {
   const upstreamRes = await fetch(UPSTREAM_URL, {
@@ -40,9 +48,8 @@ function transformCatalogue(providerData, exchangeRate) {
     // Website ထဲက နံပါတ်တွေနဲ့ ကိုက်ညီအောင် ပြင်ဆင်ခြင်း
     let gameCode = (item.category_id || item.game_id || item.service_id || item.category || "unknown").toString();
 
-    // MLBB အတွက် ခြွင်းချက် (MLBB က Code 6 ဖြစ်ပေမယ့် Website မှာ mlbb_all_regions လို့ သုံးထားလို့ပါ)
-    if (gameCode === "6") {
-      gameCode = "mlbb_all_regions";
+    if (GAME_CODE_MAP[gameCode]) {
+      gameCode = GAME_CODE_MAP[gameCode];
     }
 
     if (!gamesMap[gameCode]) {
