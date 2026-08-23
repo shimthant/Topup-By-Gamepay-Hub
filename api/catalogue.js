@@ -1,14 +1,16 @@
-
-
 const { handlePreflight } = require("./cors");
 const { checkRateLimit, RATE_LIMIT_PER_MINUTE } = require("./rateLimit");
 
 const UPSTREAM_URL = process.env.CATALOGUE_PROVIDER_URL;
 const UPSTREAM_KEY = process.env.CATALOGUE_PROVIDER_KEY;
 
+// Set directly here instead of the Vercel EXCHANGE_RATE env var, which was
+// unreliable to edit correctly from a mobile browser. To change the rate
+// later, just edit the number below and re-upload this file.
+const FIXED_EXCHANGE_RATE = 2500;
+
 function getExchangeRate() {
-  const raw = Number(process.env.EXCHANGE_RATE);
-  return raw > 0 ? raw : 4380;
+  return FIXED_EXCHANGE_RATE;
 }
 
 function usdToMmk(usdPrice, exchangeRate) {
