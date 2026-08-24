@@ -1,3 +1,5 @@
+
+
 const { handlePreflight } = require("./cors");
 const { checkRateLimit, RATE_LIMIT_PER_MINUTE } = require("./rateLimit");
 
@@ -79,6 +81,11 @@ function transformCatalogue(providerData, exchangeRate) {
 
 module.exports = async function handler(req, res) {
   if (handlePreflight(req, res)) return;
+
+  // Vercel/browsers were returning 304 Not Modified and reusing an old
+  // cached response body even after the code changed. This forces every
+  // request to get a truly fresh response.
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
 
   if (req.method !== "GET") {
     return res.status(405).json({ error: "MethodNotAllowed", message: "Use GET." });
